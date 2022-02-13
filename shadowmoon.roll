@@ -1,0 +1,50 @@
+:: Suishen double attack (attacking) with scabbard of vigor ::
+@{selected|wtype}&{template:default} {{Suishen Attacking=?{Scabbard of Vigor|Not Active,+0[Scabbard of Vigor not used]|+4 for 1 round,+4[Scabbard of Vigor for 1 round]|+3 for 3 rounds,+3[Scabbard of Vigor for 3 rounds]|+2 for 5 rounds,+2[Scabbard of Vigor for 5 rounds]|+1 for 10 rounds,+1[Scabbard of Vigor for 10 rounds]}}}
+@{selected|wtype}&{template:atkdmg} {{mod=[[@{dexterity_mod} +@{pb} +4[MAGIC]]]}} {{rname=Suishen ATTACKING}} {{r1=[[@{selected|d20}cs>20 + 5[DEX] + 4[PROF] + 4[MAGIC] ?{Scabbard of Vigor}]]}} @{selected|rtype}cs>20 + 5[DEX] + 4[PROF] + 4[MAGIC] ?{Scabbard of Vigor}]]}} {{attack=1}} {{range=}} {{damage=1}} {{dmg1flag=1}} {{dmg1=[[1d8 + 5[DEX] + 4[MAGIC] ?{Scabbard of Vigor}]]}} {{dmg1type=Slashing}} {{damage=1}} {{dmg2flag=1}} {{dmg2=[[1d6]]}} {{dmg2type=Fire}} {{crit1=[[1d8[CRIT]]]}} {{crit2=[[1d10[CRIT]]]}} 0 {{desc=}}   {{spelllevel=}} {{innate=}} {{globalattack=@{selected|global_attack_mod}}} {{globaldamage=[[0]]}} {{globaldamagecrit=[[0]]}} {{globaldamagetype=@{selected|global_damage_mod_type}}} ammo= @{selected|charname_output}
+@{selected|wtype}&{template:atkdmg} {{mod=[[@{dexterity_mod} +@{pb} +4[MAGIC]]]}} {{rname=Suishen ATTACKING}} {{r1=[[@{selected|d20}cs>20 + 5[DEX] + 4[PROF] + 4[MAGIC] ?{Scabbard of Vigor}]]}} @{selected|rtype}cs>20 + 5[DEX] + 4[PROF] + 4[MAGIC] ?{Scabbard of Vigor}]]}} {{attack=1}} {{range=}} {{damage=1}} {{dmg1flag=1}} {{dmg1=[[1d8 + 5[DEX] + 4[MAGIC] ?{Scabbard of Vigor}]]}} {{dmg1type=Slashing}} {{damage=1}} {{dmg2flag=1}} {{dmg2=[[1d6]]}} {{dmg2type=Fire}} {{crit1=[[1d8[CRIT]]]}} {{crit2=[[1d10[CRIT]]]}} 0 {{desc=}}   {{spelllevel=}} {{innate=}} {{globalattack=@{selected|global_attack_mod}}} {{globaldamage=[[0]]}} {{globaldamagecrit=[[0]]}} {{globaldamagetype=@{selected|global_damage_mod_type}}} ammo= @{selected|charname_output}
+
+:: Suishen double attack (defending) with scabbard of vigor ::
+@{selected|wtype}&{template:default} {{Suishen Defending=?{Scabbard of Vigor|Not Active,+0[Scabbard of Vigor not used]|+4 for 1 round,+4[Scabbard of Vigor for 1 round]|+3 for 3 rounds,+3[Scabbard of Vigor for 3 rounds]|+2 for 5 rounds,+2[Scabbard of Vigor for 5 rounds]|+1 for 10 rounds,+1[Scabbard of Vigor for 10 rounds]}}}
+@{Shadow/Sun Stealer|wtype}&{template:atkdmg} {{mod=[[@{dexterity_mod} +@{pb}]]}} {{rname=Suishen DEFENDING}} {{r1=[[@{Shadow/Sun Stealer|d20}cs>20 + 5[DEX] + 4[PROF] ?{Scabbard of Vigor}]]}} @{Shadow/Sun Stealer|rtype}cs>20 + 5[DEX] + 4[PROF] ?{Scabbard of Vigor}]]}} {{attack=1}} {{range=}} {{damage=1}} {{dmg1flag=1}} {{dmg1=[[1d8 + 5[DEX] ?{Scabbard of Vigor}]]}} {{dmg1type=Slashing}} {{damage=1}} {{dmg2flag=1}} {{dmg2=[[1d6]]}} {{dmg2type=Fire}} {{crit1=[[1d8[CRIT]]]}} {{crit2=[[1d10[CRIT]]]}} 0 {{spelllevel=}} {{innate=}} {{desc=Suishen is granting AC +4: [[@{AC}+4]]}} ammo @{Shadow/Sun Stealer|charname_output}
+@{Shadow/Sun Stealer|wtype}&{template:atkdmg} {{mod=[[@{dexterity_mod} +@{pb}]]}} {{rname=Suishen DEFENDING}} {{r1=[[@{Shadow/Sun Stealer|d20}cs>20 + 5[DEX] + 4[PROF] ?{Scabbard of Vigor}]]}} @{Shadow/Sun Stealer|rtype}cs>20 + 5[DEX] + 4[PROF] ?{Scabbard of Vigor}]]}} {{attack=1}} {{range=}} {{damage=1}} {{dmg1flag=1}} {{dmg1=[[1d8 + 5[DEX] ?{Scabbard of Vigor}]]}} {{dmg1type=Slashing}} {{damage=1}} {{dmg2flag=1}} {{dmg2=[[1d6]]}} {{dmg2type=Fire}} {{crit1=[[1d8[CRIT]]]}} {{crit2=[[1d10[CRIT]]]}} 0 {{spelllevel=}} {{innate=}} {{desc=Suishen is granting AC +4: [[@{AC}+4]]}} ammo @{Shadow/Sun Stealer|charname_output}
+
+:: Whispering Shrike (direct call) ::
+%{Shadow/Sun Stealer|repeating_attack_-Mc4SYEoW8lQ9giNeF7Y_attack}
+
+:: Shuriken attack or flurry of blows for 1Ki ::
+&{template:default} {{?{Action type|Attack Action|Bonus Action (-1Ki)}=Shuriken streak out towards their target(s)}}
+%{Shadow/Sun Stealer|repeating_attack_-McdhGxQ60USI2vlaTz7_attack}
+%{Shadow/Sun Stealer|repeating_attack_-McdhGxQ60USI2vlaTz7_attack}
+
+:: Stealth check including Pseudodragon (Bitey) with optional Pass Without Trace ::
+@{selected|wtype}&{template:atk} {{rname=^{stealth-u}}} {{mod=@{selected|stealth_bonus}?{Pass Without Trace|Inactive,+0[Standard Stealth]|Active,+10[Pass Without Trace]}}} {{r1=[[@{selected|d20}+@{selected|stealth_bonus}@{selected|pbd_safe}?{Pass Without Trace}]]}} @{selected|rtype}+@{selected|stealth_bonus}@{selected|pbd_safe}?{Pass Without Trace}]]}} {{global=@{selected|global_skill_mod}}} @{selected|charname_output} {{desc=[img](https://i.imgur.com/bLzWIBP.gif)}}
+@{Pseudodragon|wtype}&{template:npc} @{Pseudodragon|npc_name_flag} {{rname=^{stealth}}} {{mod=@{Pseudodragon|npc_stealth}}} {{r1=[[@{Pseudodragon|d20}+@{Pseudodragon|npc_stealth}?{Pass Without Trace|Inactive|Active}]]}} @{Pseudodragon|rtype}+@{Pseudodragon|npc_stealth}?{Pass Without Trace|Inactive|Active}]]}} {{type=Skill}}
+
+:: Perception check including Pseudiodragon (Bitey) ::
+@{Shadow/Sun Stealer|perception_roll}
+@{Pseudodragon|wtype}&{template:npc} @{Pseudodragon|npc_name_flag} {{rname=^{perception}}} {{mod=@{Pseudodragon|npc_perception}}} {{r1=[[@{Pseudodragon|d20}+@{Pseudodragon|npc_perception}]]}} @{Pseudodragon|rtype}+@{Pseudodragon|npc_perception}]]}} {{type=Skill}}
+
+:: Healing potions (full) ::
+&{template:atkdmg}  {{damage=1}} {{dmg1flag=1}} ?{Healing Potion Variety?
+|5e Standard (2d4+2), {{rname=5e Standard Healing Potion (2d4+2)&#125;&#125;  {{dmg1=[[2d4+2[Healing]]]&#125;&#125; {{dmg1type=Healing&#125;&#125;
+|5e Greater (4d4+4), {{rname=5e Greater Healing Potion (4d4+4)&#125;&#125;  {{dmg1=[[4d4+4[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|5e Superior (8d4+8), {{rname=5e Superior Healing Potion (8d4+8)&#125;&#125;  {{dmg1=[[8d4+8[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|5e Supreme (10d4+20),{{rname=5e Supreme Healing Potion (10d4+20)&#125;&#125;  {{dmg1=[[10d4+20[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|Cure Light Wounds (1d8+4), {{rname=Cure Light Wounds Potion (1d8+4)&#125;&#125;  {{dmg1=[[1d8+4[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|Cure Moderate Wounds (2d8+5), {{rname=Cure Moderate Wounds Potion (2d8+5)&#125;&#125;  {{dmg1=[[2d8+5[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|Cure Serious Wounds (3d8+7), {{rname=Cure Serious Wounds Potion (3d8+7)&#125;&#125;  {{dmg1=[[3d8+7[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|Cure Critical Wounds (4d8+9), {{rname=Cure Critical Wounds Potion (4d4+9)&#125;&#125;  {{dmg1=[[4d8+9[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|PF2 Minor 4gp (1d8+0), {{rname=PF2 Minor Healing Potion (1d8+0)&#125;&#125;  {{dmg1=[[1d8+0[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|PF2 Lesser 12gp (2d8+5), {{rname=PF2 Lesser Healing Potion (2d8+5)&#125;&#125;  {{dmg1=[[2d8+5[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|PF2 Moderate 50gp (3d8+10), {{rname=PF2 Moderate Healing Potion (3d8+10)&#125;&#125;  {{dmg1=[[3d8+10[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|PF2 Greater 400gp (6d8+20), {{rname=PF2 Greater Healing Potion (6d8+20)&#125;&#125;  {{dmg1=[[6d8+20[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|PF2 Major 5000gp (8d8+30), {{rname=PF2 Major Healing Potion (8d8+30)&#125;&#125;  {{dmg1=[[8d8+30[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+}
+
+:: Healing potions (our game) ::
+&{template:atkdmg}  {{damage=1}} {{dmg1flag=1}} ?{Healing Potion Variety?
+|Cure Light Wounds (1d8+4), {{rname=Cure Light Wounds Potion (1d8+4)&#125;&#125;  {{dmg1=[[1d8+4[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|Cure Moderate Wounds (2d8+5), {{rname=Cure Moderate Wounds Potion (2d8+5)&#125;&#125;  {{dmg1=[[2d8+5[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|Cure Serious Wounds (3d8+7), {{rname=Cure Serious Wounds Potion (3d8+7)&#125;&#125;  {{dmg1=[[3d8+7[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|Cure Critical Wounds (4d8+9), {{rname=Cure Critical Wounds Potion (4d4+9)&#125;&#125;  {{dmg1=[[4d8+9[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+}

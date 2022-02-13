@@ -4,22 +4,22 @@
 
 ```roll20
 &{template:default} {{?{Attack style|Normal,Attack Action=Celeste lashes out with Aurelie|Opportunity,Opportunity Attack (Reaction)=Celeste thrusts Aurelie at the space invader}}}
-%{Celeste Anaej Brakride|repeating_attack_$0_attack}
-%{Celeste Anaej Brakride|Divine-Strike} {{desc=[**On a succesful hit** add Divine Strike](#" style="color:#7e2d40;font-size:18px;display:block:text-align:center;margin-bottom:5px)}}
+%{Celeste Anaej Brakride|repeating_attack_-MdCv-xjHLYjkkLb8AdV_attack}
+%{Celeste Anaej Brakride|Divine-Strike.} {{desc=[**On a succesful hit** add Divine Strike](#" style="color:#7e2d40;font-size:18px;display:block:text-align:center;margin-bottom:5px)}}
 ```
 
 ## Aurelie bonus polearm attack
 
 ```roll20
 &{template:default} {{Bonus Action=Celeste brings Aurelie about for a follow-up}}
-%{Celeste Anaej Brakride|repeating_attack_$2_attack}
+%{Celeste Anaej Brakride|repeating_attack_-MfWu-39jR0K9gTRvuSc_attack}
 ```
 
 ## Spiritual Weapon with only even number spell slot selection
 
 ```roll20
-?{Cast at what level?|Level 2,0|Level 4,1|Level 6,2|Level 8,3}
-%{Celeste Anaej Brakride|repeating_attack_$2_attack}
+?{Cast at what level?|Level 2,0|Level 4,2|Level 6,4|Level 8,6}
+%{Celeste Anaej Brakride|repeating_attack_-Mc4snRrDjgG03mVl0gs_attack}
 ```
 
 ## Divine Strike
@@ -40,15 +40,4 @@
 ```roll20
 @{wtype}&{template:simple} {{rname=^{stealth-u}}} {{mod=@{stealth_bonus}}} {{r1=[[@{d20}+@{stealth_bonus}[Mods]@{pbd_safe}?{Pass Without Trace|Inactive|Active,+10[Pass Without Trace]}]]}} {{query=1}} ?{Advantage?|Normal Roll,&#123&#123normal=1&#125&#125 &#123&#123r2=[[0d20|Advantage,&#123&#123advantage=1&#125&#125 &#123&#123r2=[[@{d20}|Disadvantage,&#123&#123disadvantage=1&#125&#125 &#123&#123r2=[[@{d20}}+@{stealth_bonus}[Mods]@{pbd_safe}?{Pass Without Trace|Inactive|Active,+10[Pass Without Trace]}]]}} {{global=@{global_skill_mod}}} @{charname_output}
 [img](https://i.pinimg.com/originals/16/45/a8/1645a8c741430a7e484583f88809d4f0.gif)
-```
-
-# Healing potions (our game)
-
-```roll20
-&{template:atkdmg}  {{damage=1}} {{dmg1flag=1}} ?{Healing Potion Variety?
-|Cure Light Wounds (1d8+4), {{rname=Cure Light Wounds Potion (1d8+4)&#125;&#125;  {{dmg1=[[1d8+4[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
-|Cure Moderate Wounds (2d8+5), {{rname=Cure Moderate Wounds Potion (2d8+5)&#125;&#125;  {{dmg1=[[2d8+5[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
-|Cure Serious Wounds (3d8+7), {{rname=Cure Serious Wounds Potion (3d8+7)&#125;&#125;  {{dmg1=[[3d8+7[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
-|Cure Critical Wounds (4d8+9), {{rname=Cure Critical Wounds Potion (4d4+9)&#125;&#125;  {{dmg1=[[4d8+9[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
-}
 ```

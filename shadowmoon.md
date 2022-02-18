@@ -49,3 +49,14 @@
 @{Shadow Moon|perception_roll}
 @{Pseudodragon|wtype}&{template:npc} @{Pseudodragon|npc_name_flag} {{rname=^{perception}}} {{mod=@{Pseudodragon|npc_perception}}} {{r1=[[@{Pseudodragon|d20}+@{Pseudodragon|npc_perception}]]}} @{Pseudodragon|rtype}+@{Pseudodragon|npc_perception}]]}} {{type=Skill}}
 ```
+
+## Boots of Speedy Spider Climbing
+
+```roll20
+&{template:spell} {{name=Haste (as Speed)}} {{level=Boots of Speedy Spiderkind}} {{castingtime=click heels (free action)}} {{range=+30 movement}} {{target=self}} {{target=speed: self, extra attack target: within 30ft of previous target}} {{s=1}} {{duration=10 rounds / day (may be non-consecutive)}} {{description=On each round this ability is active:
++one extra attack with all bonuses,
++1 to all attack rolls,
++1 to AC,
++1 to DEX saves,
++30' movement speed}} {{charname=Shadow Moon}}
+```

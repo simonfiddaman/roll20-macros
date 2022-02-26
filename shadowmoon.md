@@ -46,6 +46,7 @@ As Whispering Shrike is generally used as the bonus action following Suishen, th
 
 ```roll20
 !setattr --charid -MqL43DfdxRVAwuOc6U2 --silent --repeating_acmod_-MwOCaL5YpqS9l7X5qLs_global_ac_active_flag|0
+!modbattr --charid -MqL43DfdxRVAwuOc6U2 --silent --class_resource|-1
 &{template:default} {{name=Flurry of Blows}} {{weapon=Shadow Moon's Shuriken}} {{cost=1 Ki point (Bonus Action)}} {{desc=Shuriken streak out towards their target(s) in a Flurry of Shuriken}} {{Ki=[[@{Shadow Moon|class_resource}-1]] remaining}}
 %{Shadow Moon|repeating_attack_-MqLl4atpCZPoiKGquie_attack}
 %{Shadow Moon|repeating_attack_-MqLl4atpCZPoiKGquie_attack}

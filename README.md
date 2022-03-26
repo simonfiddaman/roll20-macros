@@ -4,11 +4,11 @@ Roll20 macros for our Jade Regent game
 
 ## characters
 
-- [Celeste](blob/main/celeste.md)
-- [Shadow Moon](blob/main/shadowmoon.md)
-- [NPCs](blob/main/npcs.md)
-- [Global macros](blob/main/global.md)
-- [Reddit collections](blob/main/examples/reddit-macros.md)
+- [Celeste](celeste.md)
+- [Shadow Moon](shadowmoon.md)
+- [NPCs](npcs.md)
+- [Global macros](global.md)
+- [Reddit collections](examples/reddit-macros.md)
 
 ## syntax highlighting
 

@@ -9,7 +9,7 @@
 |Cure Light Wounds (1d8+4), {{rname=Cure Light Wounds Potion (1d8+4)&#125;&#125;  {{dmg1=[[1d8+4[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
 |Cure Moderate Wounds (2d8+5), {{rname=Cure Moderate Wounds Potion (2d8+5)&#125;&#125;  {{dmg1=[[2d8+5[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
 |Cure Serious Wounds (3d8+7), {{rname=Cure Serious Wounds Potion (3d8+7)&#125;&#125;  {{dmg1=[[3d8+7[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
-|Cure Critical Wounds (4d8+9), {{rname=Cure Critical Wounds Potion (4d4+9)&#125;&#125;  {{dmg1=[[4d8+9[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|Cure Critical Wounds (4d8+9), {{rname=Cure Critical Wounds Potion (4d8+9)&#125;&#125;  {{dmg1=[[4d8+9[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
 }
 ```
 
@@ -24,7 +24,7 @@
 |Cure Light Wounds (1d8+4), {{rname=Cure Light Wounds Potion (1d8+4)&#125;&#125;  {{dmg1=[[1d8+4[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
 |Cure Moderate Wounds (2d8+5), {{rname=Cure Moderate Wounds Potion (2d8+5)&#125;&#125;  {{dmg1=[[2d8+5[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
 |Cure Serious Wounds (3d8+7), {{rname=Cure Serious Wounds Potion (3d8+7)&#125;&#125;  {{dmg1=[[3d8+7[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
-|Cure Critical Wounds (4d8+9), {{rname=Cure Critical Wounds Potion (4d4+9)&#125;&#125;  {{dmg1=[[4d8+9[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
+|Cure Critical Wounds (4d8+9), {{rname=Cure Critical Wounds Potion (4d8+9)&#125;&#125;  {{dmg1=[[4d8+9[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
 |PF2 Minor 4gp (1d8+0), {{rname=PF2 Minor Healing Potion (1d8+0)&#125;&#125;  {{dmg1=[[1d8+0[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
 |PF2 Lesser 12gp (2d8+5), {{rname=PF2 Lesser Healing Potion (2d8+5)&#125;&#125;  {{dmg1=[[2d8+5[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;
 |PF2 Moderate 50gp (3d8+10), {{rname=PF2 Moderate Healing Potion (3d8+10)&#125;&#125;  {{dmg1=[[3d8+10[Healing]]]&#125;&#125;  {{dmg1type=Healing&#125;&#125;

@@ -9,6 +9,8 @@ When Suishen is in attacking mode, the enhancement bonus is applied to attack an
 %{-MqL43DfdxRVAwuOc6U2|repeating_attack_-MqLOWBpl20Bt8wZDFri_attack}
 ```
 
+Item Type: Melee Weapon, Damage: 1d8, Damage Type: Slashing, Secondary Damage: 1d6, Secondary Damage Type: Fire, Melee Attacks +5,Melee Damage +5
+
 ## Suishen (defending)
 
 When Suishen is in defending mode, the enhancement bonus is not applied to attack or damage rolls, but boosts Shadow Moon's AC instead.

@@ -25,7 +25,7 @@
 ## Divine Strike
 
 ```roll20
-&{template:dmg} {{rname=Divine Strike}} {{range}} {{damage=1}} {{dmg1flag=1}} {{dmg1=[[1d8]]}} {{dmg1type=Radiant}} {{dmg2flag}} {{crit}} {{save}} {{saveattr}} {{savedesc}} {{savedc}} {{desc}} {{hldmg}} {{spelllevel}} ammo @{Celeste Anaej Brakride|charname_output}
+&{template:dmg} {{rname=Divine Strike}} {{range}} {{damage=1}} {{dmg1flag=1}} {{dmg1=[[2d8]]}} {{dmg1type=Radiant}} {{dmg2flag}} {{crit}} {{save}} {{saveattr}} {{savedesc}} {{savedc}} {{desc}} {{hldmg}} {{spelllevel}} ammo @{Celeste Anaej Brakride|charname_output}
 ```
 
 ## Perception with Brinewall Shield
@@ -40,4 +40,18 @@
 ```roll20
 @{wtype}&{template:simple} {{rname=^{stealth-u}}} {{mod=@{stealth_bonus}}} {{r1=[[@{d20}+@{stealth_bonus}[Mods]@{pbd_safe}?{Pass Without Trace|Inactive|Active,+10[Pass Without Trace]}]]}} {{query=1}} ?{Advantage?|Normal Roll,&#123&#123normal=1&#125&#125 &#123&#123r2=[[0d20|Advantage,&#123&#123advantage=1&#125&#125 &#123&#123r2=[[@{d20}|Disadvantage,&#123&#123disadvantage=1&#125&#125 &#123&#123r2=[[@{d20}}+@{stealth_bonus}[Mods]@{pbd_safe}?{Pass Without Trace|Inactive|Active,+10[Pass Without Trace]}]]}} {{global=@{global_skill_mod}}} @{charname_output}
 [img](https://i.pinimg.com/originals/16/45/a8/1645a8c741430a7e484583f88809d4f0.gif)
+```
+
+## Radiant Soul (Protector Aasimar)
+
+```roll20
+&{template:spell} {{name=Radiant Soul}} {{level=@{{level}}}} {{castingtime=1 action}} {{target=self}} {{s=1}} {{duration=1 minute}} {{description=Starting at 3rd level, you can use your action to unleash the divine energy within yourself, causing your eyes to glimmer and two luminous, incorporeal wings to sprout from your back.
+
+Your transformation lasts for 1 minute or until you end it as a bonus action. During it, you have a flying speed of 30 feet, and once on each of your turns, you can deal extra radiant damage to one target when you deal damage to it with an attack or a spell. The extra radiant damage equals your level.}} {{charname=Celeste}}
+
+!setattr --charid -M_uD0cDh9DH2BP2efp7 --silent --repeating_damagemod_-MiH4iKdZ9LOJsXgVLjm_global_damage_active_flag|1
+```
+
+```roll20
+!setattr --charid -M_uD0cDh9DH2BP2efp7 --silent --repeating_damagemod_-MiH4iKdZ9LOJsXgVLjm_global_damage_active_flag|0
 ```

@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"README.md": "markdown",
+			"*.md": "rmacro"
+		},
+		"files.defaultLanguage": "rmacro"
+	}
+}

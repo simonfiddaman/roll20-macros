@@ -1,4 +1,4 @@
-# NPC macros
+# NPC macros - Jade Regent
 
 ## Wolf Pack Attack
 

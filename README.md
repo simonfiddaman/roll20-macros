@@ -9,6 +9,10 @@ Roll20 macros for our Jade Regent game
 - [Global macros](global.md)
 - [Reddit collections](examples/reddit-macros.md)
 
+## Carnival of Tears characters
+
+- [Nevitash](nevitash.md)
+
 ## Dragon Heist characters
 
 - [Phylactery Phylund](phylactery.md)

@@ -3,7 +3,7 @@
 ## Vigilant Blessing
 
 &{template:traits} {{name=Vigilant Blessing}} {{source=Class:Twilight Domain}} {{description=The night has taught you to be vigilant. As an action, you give one creature you touch (including possibly yourself) advantage on the next initiative roll the creature makes. This benefit ends immediately after the roll or if you use this feature again.}}
-@{Nevitash|wtype}&{template:simple} {{rname=^{init-u}}} {{mod=@{Nevitash|initiative_bonus}}} {{r1=[[@{Nevitash|initiative_style}+@{Nevitash|initiative_bonus}@{Nevitash|pbd_safe}[INIT] &{tracker}]]}} {{normal=1}} @{Nevitash|charname_output}
+@{wtype}&{template:simple} {{rname=^{init-u}}} {{mod=@{initiative_bonus}}} {{r1=[[@{initiative_style}+@{initiative_bonus}@{pbd_safe}[INIT] &{tracker}]]}} {{normal=1}} @{charname_output}
 
 ## Wisdom Saving Rolls
 

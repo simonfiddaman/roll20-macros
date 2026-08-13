@@ -792,11 +792,11 @@
       }
 
       for (const tier of tiers) {
-        appendMacroSet(allMacros, "Treat Wounds", "Treat Wounds", treatMod, tier, { riskySurgery: false });
-
         if (state.feats.has("risky-surgery")) {
           appendMacroSet(allMacros, "Treat Wounds + Risky Surgery", "Treat Wounds + Risky Surgery", riskyTreatMod, tier, { riskySurgery: true });
         }
+
+        appendMacroSet(allMacros, "Treat Wounds", "Treat Wounds", treatMod, tier, { riskySurgery: false });
       }
 
       if (state.feats.has("battle-medicine")) {

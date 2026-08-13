@@ -962,8 +962,8 @@
     function render() {
       readInputsToState();
 
-      const treat = collectBonusesForAction("treatWounds", { riskySurgery: false });
       const treatRisky = collectBonusesForAction("treatWounds", { riskySurgery: true });
+      const treat = collectBonusesForAction("treatWounds", { riskySurgery: false });
       const battle = collectBonusesForAction("battleMedicine");
 
       dom.totalModBadge.textContent = `Total Medicine Modifier: ${treat.base >= 0 ? "+" : ""}${treat.base}`;

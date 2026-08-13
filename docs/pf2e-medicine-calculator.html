@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PF2e Medicine Calculator (Treat Wounds & Battle Medicine)</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111a2b;
+      --panel-2: #1b2740;
+      --text: #e8eefc;
+      --muted: #9aa8c5;
+      --ok: #1fa84a;
+      --mod-crit: #75c84c;
+      --success: #2796df;
+      --fail: #f4ad1f;
+      --crit-fail: #b90000;
+      --border: #2a3a5c;
+      --warning: #ffda7a;
+      --danger: #ff7f7f;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
+      background: linear-gradient(180deg, #090f1d 0%, #0d1423 100%);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+
+    h1, h2, h3 { margin: 0 0 0.6rem; }
+    p, li { color: var(--muted); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .stack { display: grid; gap: 0.5rem; }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    input, select, button, textarea {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 0.5rem;
+      font: inherit;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      margin-right: 0.4rem;
+    }
+
+    button {
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    button:hover { filter: brightness(1.1); }
+
+    .badge {
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.2rem 0.55rem;
+      margin-right: 0.4rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .warn {
+      border: 1px solid #81600a;
+      background: #2d2513;
+      color: var(--warning);
+      border-radius: 8px;
+      padding: 0.65rem;
+      font-size: 0.9rem;
+      margin-top: 0.6rem;
+    }
+
+    .danger {
+      border: 1px solid #7a2a2a;
+      background: #311717;
+      color: var(--danger);
+      border-radius: 8px;
+      padding: 0.65rem;
+      font-size: 0.9rem;
+      margin-top: 0.6rem;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+
+    .swatch {
+      border-radius: 999px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.75rem;
+      color: #0d0d0d;
+      font-weight: 600;
+    }
+
+    .cf { background: var(--crit-fail); color: #fff; }
+    .f { background: var(--fail); }
+    .s { background: var(--success); }
+    .csm { background: var(--mod-crit); }
+    .cs { background: var(--ok); color: #fff; }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-top: 0.65rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.45rem;
+      text-align: center;
+      font-size: 0.82rem;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #0e1628;
+      color: #d7e1fa;
+    }
+
+    td.roll-col {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: #0e1628;
+      color: #e7eeff;
+      font-weight: 700;
+    }
+
+    td.outcome-critical_failure { background: var(--crit-fail); color: #fff; }
+    td.outcome-failure { background: var(--fail); color: #2a2204; }
+    td.outcome-success { background: var(--success); color: #08243a; }
+    td.outcome-upgraded_critical_success { background: var(--mod-crit); color: #1b3210; }
+    td.outcome-critical_success { background: var(--ok); color: #edfbed; }
+
+    .muted { color: var(--muted); font-size: 0.85rem; }
+
+    .macro-block {
+      display: grid;
+      gap: 0.4rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem;
+      background: #0d1629;
+    }
+
+    .macro-block h4 {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    textarea {
+      min-height: 130px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      resize: vertical;
+    }
+
+    .macro-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.8rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .actions button { width: auto; }
+
+    .rules-list li { margin-bottom: 0.25rem; }
+
+    @media (max-width: 680px) {
+      table { min-width: 620px; }
+      .container { padding: 0.7rem; }
+      .panel { padding: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="panel">
+      <h1>PF2e Medicine Calculator</h1>
+      <p>Treat Wounds (with/without Risky Surgery) and Battle Medicine table + Roll20 macro generator.</p>
+      <div class="legend">
+        <span class="swatch cf">Critical Failure</span>
+        <span class="swatch f">Failure</span>
+        <span class="swatch s">Success</span>
+        <span class="swatch csm">Modified Critical Success</span>
+        <span class="swatch cs">Critical Success</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Inputs</h2>
+      <div class="grid">
+        <div>
+          <label for="level">Player level</label>
+          <select id="level"></select>
+        </div>
+        <div>
+          <label for="wisdom">Wisdom modifier</label>
+          <input id="wisdom" type="number" min="-5" max="12" value="4" />
+        </div>
+        <div>
+          <label for="proficiency">Medicine proficiency</label>
+          <select id="proficiency">
+            <option value="trained">Trained</option>
+            <option value="expert">Expert</option>
+            <option value="master">Master</option>
+            <option value="legendary">Legendary</option>
+          </select>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1rem;">Rules profile</h3>
+      <div class="grid">
+        <label for="include-optional-rules" style="display:flex;align-items:center;gap:0.35rem;">
+          <input id="include-optional-rules" type="checkbox" />
+          Include optional/house-rule additions
+        </label>
+      </div>
+
+      <h3 style="margin-top:1rem;">Feats</h3>
+      <div id="feats" class="grid"></div>
+
+      <h3 style="margin-top:1rem;">Items</h3>
+      <div id="items" class="grid"></div>
+
+      <h3 style="margin-top:1rem;">Roll20 macro targets</h3>
+      <div class="grid">
+        <label for="macro-target-default" style="display:flex;align-items:center;gap:0.35rem;">
+          <input id="macro-target-default" type="checkbox" checked />
+          Default template
+        </label>
+        <label for="macro-target-pf2e" style="display:flex;align-items:center;gap:0.35rem;">
+          <input id="macro-target-pf2e" type="checkbox" checked />
+          Official PF2e sheet template
+        </label>
+      </div>
+
+      <h3 style="margin-top:1rem;">Manual bonus overrides</h3>
+      <div class="grid">
+        <div>
+          <label for="manual-circumstance">Circumstance bonus</label>
+          <input id="manual-circumstance" type="number" value="0" />
+        </div>
+        <div>
+          <label for="manual-item">Item bonus</label>
+          <input id="manual-item" type="number" value="0" />
+        </div>
+        <div>
+          <label for="manual-status">Status bonus</label>
+          <input id="manual-status" type="number" value="0" />
+        </div>
+        <div>
+          <label for="manual-untyped">Untyped bonus</label>
+          <input id="manual-untyped" type="number" value="0" />
+        </div>
+      </div>
+
+      <div id="warnings"></div>
+
+      <div style="margin-top:0.8rem;">
+        <span class="badge" id="total-mod-badge">Total Medicine Modifier: +0</span>
+        <span class="badge" id="tw-mod-badge">Treat Wounds Modifier: +0</span>
+        <span class="badge" id="bm-mod-badge">Battle Medicine Modifier: +0</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Treat Wounds</h2>
+      <div id="table-treat"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Treat Wounds + Risky Surgery</h2>
+      <div id="table-risky"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Battle Medicine</h2>
+      <div id="table-battle"></div>
+      <p class="muted">Risky Surgery only applies to Treat Wounds by RAW and is not applied to Battle Medicine.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Roll20 Macros</h2>
+      <div class="actions">
+        <button id="copy-all" type="button">Copy all macros</button>
+      </div>
+      <div id="macro-output" class="macro-grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Rules assumptions</h2>
+      <ul class="rules-list">
+        <li>Rules baseline is Pathfinder 2e Remaster for Treat Wounds, Risky Surgery, and Battle Medicine.</li>
+        <li>DC tiers in scope are 15/20/30/40 with proficiency gating (Trained/Expert/Master/Legendary).</li>
+        <li>Typed bonuses (circumstance, item, status) use highest value only; untyped bonuses stack.</li>
+        <li>Risky Surgery adds +2 circumstance to Treat Wounds and upgrades success to critical success.</li>
+        <li>Battle Medicine availability requires the Battle Medicine feat toggle.</li>
+        <li>Optional additions are hidden in strict RAW mode unless the optional toggle is enabled.</li>
+        <li>Initial optional set included: Forensic Medicine Methodology, Mortal Healing, Expanded Healer's Tools, Medic's Visitation Kit.</li>
+        <li>Cooldown, target count, and immunity changes are informational notes in output/macros.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    const RANK_ORDER = ["trained", "expert", "master", "legendary"];
+    const PROFICIENCY_BONUS = { trained: 2, expert: 4, master: 6, legendary: 8 };
+
+    const DC_TIERS = [
+      { dc: 15, required: "trained", healBonus: 0, label: "Trained" },
+      { dc: 20, required: "expert", healBonus: 10, label: "Expert" },
+      { dc: 30, required: "master", healBonus: 30, label: "Master" },
+      { dc: 40, required: "legendary", healBonus: 50, label: "Legendary" }
+    ];
+
+    const RAW_FEATS = [
+        {
+          id: "battle-medicine",
+          name: "Battle Medicine",
+          ruleset: "raw",
+          actions: ["battleMedicine"],
+          minLevel: 1,
+          prerequisites: ["Trained in Medicine"],
+          modifiers: [],
+          effects: ["Enables Battle Medicine action (in-combat Treat Wounds)."]
+        },
+        {
+          id: "continual-recovery",
+          name: "Continual Recovery",
+          ruleset: "raw",
+          actions: ["treatWounds"],
+          minLevel: 2,
+          prerequisites: ["Expert in Medicine"],
+          modifiers: [],
+          effects: ["Treat Wounds immunity cooldown reduced (informational)."]
+        },
+        {
+          id: "paragon-battle-medicine",
+          name: "Paragon Battle Medicine",
+          ruleset: "raw",
+          actions: ["battleMedicine"],
+          minLevel: 7,
+          prerequisites: ["Battle Medicine"],
+          modifiers: [],
+          effects: ["Battle Medicine immunity handling changes (informational)."]
+        },
+        {
+          id: "risky-surgery",
+          name: "Risky Surgery",
+          ruleset: "raw",
+          actions: ["treatWounds"],
+          minLevel: 1,
+          prerequisites: ["Trained in Medicine"],
+          modifiers: [
+            { appliesTo: ["treatWounds"], type: "circumstance", value: 2, requires: "riskySurgery" }
+          ],
+          effects: ["Deal 1d8 slashing damage before Treat Wounds.", "Treat Wounds success becomes critical success."]
+        },
+        {
+          id: "ward-medic",
+          name: "Ward Medic",
+          ruleset: "raw",
+          actions: ["treatWounds"],
+          minLevel: 2,
+          prerequisites: ["Expert in Medicine"],
+          modifiers: [],
+          effects: ["Increases number of Treat Wounds targets (informational)."]
+        }
+    ];
+
+    const OPTIONAL_FEATS = [
+        {
+          id: "forensic-medicine-methodology",
+          name: "Forensic Medicine Methodology (optional)",
+          ruleset: "optional",
+          actions: ["battleMedicine"],
+          minLevel: 1,
+          prerequisites: ["Investigator methodology"],
+          modifiers: [
+            { appliesTo: ["battleMedicine"], type: "circumstance", value: 1 }
+          ],
+          effects: ["Conditional +1 circumstance bonus to Battle Medicine checks."]
+        },
+        {
+          id: "mortal-healing",
+          name: "Mortal Healing (optional)",
+          ruleset: "optional",
+          actions: ["treatWounds"],
+          minLevel: 2,
+          prerequisites: ["Harm trait faith restrictions"],
+          modifiers: [
+            { appliesTo: ["treatWounds"], type: "circumstance", value: 1 }
+          ],
+          effects: ["Conditional +1 circumstance to Treat Wounds checks in qualifying cases."]
+        }
+    ];
+
+    const RAW_ITEMS = [
+        {
+          id: "healers-gloves",
+          name: "Healer's Gloves",
+          ruleset: "raw",
+          actions: ["treatWounds", "battleMedicine"],
+          modifiers: [
+            { appliesTo: ["treatWounds", "battleMedicine"], type: "item", value: 1 }
+          ],
+          effects: ["Item bonus when used for Medicine checks (table-dependent; adjust via manual override if needed)."]
+        }
+    ];
+
+    const OPTIONAL_ITEMS = [
+        {
+          id: "expanded-healers-tools",
+          name: "Expanded Healer's Tools (optional)",
+          ruleset: "optional",
+          actions: ["treatWounds", "battleMedicine"],
+          modifiers: [
+            { appliesTo: ["treatWounds", "battleMedicine"], type: "item", value: 1 }
+          ],
+          effects: ["Potential item bonus from advanced tools depending on table rulings."]
+        },
+        {
+          id: "medics-visitation-kit",
+          name: "Medic's Visitation Kit (optional)",
+          ruleset: "optional",
+          actions: ["treatWounds", "battleMedicine"],
+          modifiers: [],
+          effects: ["Utility/support item; no direct bonus applied by default."]
+        }
+    ];
+
+    const CATALOG = {
+      feats: [...RAW_FEATS, ...OPTIONAL_FEATS],
+      items: [...RAW_ITEMS, ...OPTIONAL_ITEMS]
+    };
+
+    const state = {
+      level: 7,
+      wisdom: 4,
+      proficiency: "expert",
+      feats: new Set(["battle-medicine", "risky-surgery"]),
+      items: new Set(["healers-gloves"]),
+      manual: { circumstance: 0, item: 0, status: 0, untyped: 0 },
+      options: { includeOptionalRules: false, macroTargetDefault: true, macroTargetPf2e: true }
+    };
+
+    const dom = {
+      level: document.getElementById("level"),
+      wisdom: document.getElementById("wisdom"),
+      proficiency: document.getElementById("proficiency"),
+      includeOptionalRules: document.getElementById("include-optional-rules"),
+      macroTargetDefault: document.getElementById("macro-target-default"),
+      macroTargetPf2e: document.getElementById("macro-target-pf2e"),
+      feats: document.getElementById("feats"),
+      items: document.getElementById("items"),
+      manualCircumstance: document.getElementById("manual-circumstance"),
+      manualItem: document.getElementById("manual-item"),
+      manualStatus: document.getElementById("manual-status"),
+      manualUntyped: document.getElementById("manual-untyped"),
+      warnings: document.getElementById("warnings"),
+      tableTreat: document.getElementById("table-treat"),
+      tableRisky: document.getElementById("table-risky"),
+      tableBattle: document.getElementById("table-battle"),
+      totalModBadge: document.getElementById("total-mod-badge"),
+      twModBadge: document.getElementById("tw-mod-badge"),
+      bmModBadge: document.getElementById("bm-mod-badge"),
+      macroOutput: document.getElementById("macro-output"),
+      copyAll: document.getElementById("copy-all")
+    };
+
+    function isRankAtLeast(rank, needed) {
+      return RANK_ORDER.indexOf(rank) >= RANK_ORDER.indexOf(needed);
+    }
+
+    function isEntryEnabled(entry) {
+      return state.options.includeOptionalRules || entry.ruleset !== "optional";
+    }
+
+    function getVisibleCatalog(group) {
+      return CATALOG[group].filter(isEntryEnabled);
+    }
+
+    function pruneSelectionsForRulesProfile() {
+      const enabledFeatIds = new Set(getVisibleCatalog("feats").map((entry) => entry.id));
+      const enabledItemIds = new Set(getVisibleCatalog("items").map((entry) => entry.id));
+      state.feats = new Set([...state.feats].filter((id) => enabledFeatIds.has(id)));
+      state.items = new Set([...state.items].filter((id) => enabledItemIds.has(id)));
+    }
+
+    function getSelectedEntries() {
+      const feats = getVisibleCatalog("feats").filter((entry) => state.feats.has(entry.id));
+      const items = getVisibleCatalog("items").filter((entry) => state.items.has(entry.id));
+      return [...feats, ...items];
+    }
+
+    function collectBonusesForAction(action, context = {}) {
+      const typed = { circumstance: [], item: [], status: [] };
+      let untypedTotal = 0;
+
+      const base = state.level + PROFICIENCY_BONUS[state.proficiency] + state.wisdom;
+
+      for (const entry of getSelectedEntries()) {
+        for (const mod of (entry.modifiers || [])) {
+          if (!mod.appliesTo.includes(action)) continue;
+          if (mod.requires && !context[mod.requires]) continue;
+          if (mod.type === "untyped") {
+            untypedTotal += mod.value;
+          } else if (typed[mod.type]) {
+            typed[mod.type].push(mod.value);
+          }
+        }
+      }
+
+      typed.circumstance.push(Number(state.manual.circumstance) || 0);
+      typed.item.push(Number(state.manual.item) || 0);
+      typed.status.push(Number(state.manual.status) || 0);
+      untypedTotal += Number(state.manual.untyped) || 0;
+
+      const typeMax = {
+        circumstance: Math.max(0, ...typed.circumstance),
+        item: Math.max(0, ...typed.item),
+        status: Math.max(0, ...typed.status)
+      };
+
+      const total = base + typeMax.circumstance + typeMax.item + typeMax.status + untypedTotal;
+
+      return { base, total, typed: typeMax, untyped: untypedTotal };
+    }
+
+    function availableDcTiers() {
+      return DC_TIERS.filter((tier) => isRankAtLeast(state.proficiency, tier.required));
+    }
+
+    function stepDegree(degree, amount) {
+      const order = ["critical_failure", "failure", "success", "critical_success"];
+      const idx = Math.max(0, Math.min(order.length - 1, order.indexOf(degree) + amount));
+      return order[idx];
+    }
+
+    function evaluateDegree(roll, total, dc) {
+      let degree = "failure";
+      const diff = total - dc;
+      if (diff >= 10) degree = "critical_success";
+      else if (diff >= 0) degree = "success";
+      else if (diff <= -10) degree = "critical_failure";
+
+      if (roll === 20) degree = stepDegree(degree, 1);
+      if (roll === 1) degree = stepDegree(degree, -1);
+
+      return degree;
+    }
+
+    function evaluateOutcome(action, roll, total, dc, options = {}) {
+      const baseDegree = evaluateDegree(roll, total, dc);
+      let degree = baseDegree;
+      let upgraded = false;
+
+      if (options.riskySurgery && action === "treatWounds" && degree === "success") {
+        degree = "critical_success";
+        upgraded = true;
+      }
+
+      return { degree, upgraded };
+    }
+
+    function effectLabel(action, degree, healBonus, riskySurgery) {
+      if (degree === "critical_success") return `4d8 + ${healBonus} HP`;
+      if (degree === "success") return `2d8 + ${healBonus} HP`;
+      if (degree === "failure") return "0 HP";
+      if (degree === "critical_failure") return "1d8 damage";
+      if (riskySurgery && action === "treatWounds" && degree === "critical_success") return `4d8 + ${healBonus} HP`;
+      return "-";
+    }
+
+    function outcomeClass(result) {
+      if (result.degree === "critical_failure") return "outcome-critical_failure";
+      if (result.degree === "failure") return "outcome-failure";
+      if (result.degree === "success") return "outcome-success";
+      if (result.degree === "critical_success" && result.upgraded) return "outcome-upgraded_critical_success";
+      return "outcome-critical_success";
+    }
+
+    function outcomeText(result) {
+      if (result.degree === "critical_failure") return "CF";
+      if (result.degree === "failure") return "F";
+      if (result.degree === "success") return "S";
+      if (result.degree === "critical_success" && result.upgraded) return "S→CS";
+      return "CS";
+    }
+
+    function renderTable(target, title, action, modifier, options = {}) {
+      const tiers = availableDcTiers();
+      if (action === "battleMedicine" && !state.feats.has("battle-medicine")) {
+        target.innerHTML = `<div class="warn">Battle Medicine table hidden: enable the Battle Medicine feat.</div>`;
+        return;
+      }
+
+      if (options.riskySurgery && !state.feats.has("risky-surgery")) {
+        target.innerHTML = `<div class="warn">Risky Surgery table hidden: enable the Risky Surgery feat.</div>`;
+        return;
+      }
+
+      let html = `<p class="muted">${title} modifier: <strong>${modifier >= 0 ? "+" : ""}${modifier}</strong></p>`;
+      html += `<div class="table-wrap"><table><thead><tr><th>Roll</th><th>Total</th>`;
+      for (const tier of tiers) {
+        html += `<th>DC ${tier.dc} (${tier.label})</th>`;
+      }
+      html += "</tr></thead><tbody>";
+
+      for (let roll = 1; roll <= 20; roll++) {
+        const total = roll + modifier;
+        html += `<tr><td class="roll-col">${roll}</td><td>${total}</td>`;
+        for (const tier of tiers) {
+          const result = evaluateOutcome(action, roll, total, tier.dc, options);
+          const effect = effectLabel(action, result.degree, tier.healBonus, options.riskySurgery);
+          html += `<td class="${outcomeClass(result)}">${outcomeText(result)}<br><small>${effect}</small></td>`;
+        }
+        html += "</tr>";
+      }
+
+      html += "</tbody></table></div>";
+      target.innerHTML = html;
+    }
+
+    function sanitizeBonus(value) {
+      const num = Number(value) || 0;
+      return num >= 0 ? `+${num}` : `${num}`;
+    }
+
+    function macroNotes(actionName, options = {}) {
+      const notes = [];
+      if (actionName.startsWith("Treat Wounds")) {
+        notes.push(state.feats.has("continual-recovery") ? "Immune 10 minutes (Continual Recovery)." : "Immune 1 hour.");
+        if (state.feats.has("ward-medic")) notes.push("Ward Medic: multiple targets.");
+        if (options.riskySurgery) notes.push("On success, upgrade to critical success.");
+      }
+      if (actionName === "Battle Medicine") {
+        notes.push(state.feats.has("paragon-battle-medicine") ? "Paragon Battle Medicine immunity rules apply." : "Immune 1 day.");
+      }
+      return notes;
+    }
+
+    function macroForActionDefault(actionName, modifier, dc, healBonus, options = {}) {
+      const title = `${actionName} (DC ${dc})`;
+      const notes = macroNotes(actionName, options);
+
+      const lines = [
+        `&{template:default} {{name=${title}}`,
+        options.riskySurgery ? "{{Risky Surgery Damage=[[1d8]] slashing}}" : "",
+        `{{Medicine Check=[[1d20 ${sanitizeBonus(modifier)}]] vs DC ${dc}}}`,
+        `{{Critical Success=[[4d8+${healBonus}]] HP recovered}}`,
+        `{{Success=[[2d8+${healBonus}]] HP recovered}}`,
+        "{{Failure=0 HP recovered}}",
+        "{{Critical Failure=[[1d8]] damage}}",
+        `{{notes=${notes.join(" ")}}}`
+      ];
+      return lines.filter(Boolean).join("");
+    }
+
+    function macroForActionPf2e(actionName, modifier, dc, healBonus, options = {}) {
+      const title = `${actionName} (DC ${dc})`;
+      const notes = macroNotes(actionName, options).join(" ");
+      const parts = [
+        "@{selected|whispertype} &{template:rolls}",
+        "{{charactername=@{selected|character_name}}}",
+        `{{header=${title}}}`,
+        "{{subheader=Medicine}}",
+        `{{roll01=[[1d20cs20cf1 ${sanitizeBonus(modifier)}]]}}`,
+        "{{roll01_type=skill}}",
+        "{{roll01_info=Medicine Check}}",
+        `{{roll02=[[4d8+${healBonus}]]}}`,
+        "{{roll02_type=heal}}",
+        "{{roll02_info=Critical Success}}",
+        `{{roll03=[[2d8+${healBonus}]]}}`,
+        "{{roll03_type=heal}}",
+        "{{roll03_info=Success}}",
+        "{{roll04=[[1d8]]}}",
+        "{{roll04_type=damage}}",
+        options.riskySurgery ? "{{roll05=[[1d8]]}}{{roll05_type=damage}}{{roll05_info=Risky Surgery self-damage}}" : "",
+        notes ? `{{desc=${notes}}}` : ""
+      ];
+      return parts.filter(Boolean).join(" ");
+    }
+
+    function createMacroBlock(name, macroText) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "macro-block";
+
+      const h = document.createElement("h4");
+      h.textContent = name;
+
+      const textarea = document.createElement("textarea");
+      textarea.value = macroText;
+      textarea.readOnly = true;
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = "Copy";
+      btn.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(macroText);
+        btn.textContent = "Copied";
+        setTimeout(() => btn.textContent = "Copy", 1000);
+      });
+
+      wrapper.append(h, textarea, btn);
+      return wrapper;
+    }
+
+    function appendMacroSet(allMacros, labelPrefix, actionName, modifier, tier, options = {}) {
+      if (state.options.macroTargetDefault) {
+        const defaultMacro = macroForActionDefault(actionName, modifier, tier.dc, tier.healBonus, options);
+        const blockName = `${labelPrefix} DC ${tier.dc} (Default template)`;
+        dom.macroOutput.appendChild(createMacroBlock(blockName, defaultMacro));
+        allMacros.push(`# ${blockName}\n${defaultMacro}`);
+      }
+      if (state.options.macroTargetPf2e) {
+        const pf2eMacro = macroForActionPf2e(actionName, modifier, tier.dc, tier.healBonus, options);
+        const blockName = `${labelPrefix} DC ${tier.dc} (PF2e sheet)`;
+        dom.macroOutput.appendChild(createMacroBlock(blockName, pf2eMacro));
+        allMacros.push(`# ${blockName}\n${pf2eMacro}`);
+      }
+    }
+
+    function renderMacroOutput(treatMod, riskyTreatMod, battleMod) {
+      const tiers = availableDcTiers();
+      dom.macroOutput.innerHTML = "";
+      const allMacros = [];
+
+      if (!state.options.macroTargetDefault && !state.options.macroTargetPf2e) {
+        dom.macroOutput.innerHTML = `<div class="warn">Enable at least one Roll20 macro target.</div>`;
+        dom.copyAll.onclick = null;
+        return;
+      }
+
+      for (const tier of tiers) {
+        appendMacroSet(allMacros, "Treat Wounds", "Treat Wounds", treatMod, tier, { riskySurgery: false });
+
+        if (state.feats.has("risky-surgery")) {
+          appendMacroSet(allMacros, "Treat Wounds + Risky Surgery", "Treat Wounds + Risky Surgery", riskyTreatMod, tier, { riskySurgery: true });
+        }
+      }
+
+      if (state.feats.has("battle-medicine")) {
+        for (const tier of tiers) {
+          appendMacroSet(allMacros, "Battle Medicine", "Battle Medicine", battleMod, tier, { riskySurgery: false });
+        }
+      }
+
+      dom.copyAll.onclick = async () => {
+        await navigator.clipboard.writeText(allMacros.join("\n\n"));
+        dom.copyAll.textContent = "Copied all";
+        setTimeout(() => dom.copyAll.textContent = "Copy all macros", 1200);
+      };
+    }
+
+    function warnings() {
+      const warnings = [];
+      const dangers = [];
+
+      if (state.feats.has("paragon-battle-medicine") && !state.feats.has("battle-medicine")) {
+        warnings.push("Paragon Battle Medicine selected without Battle Medicine.");
+      }
+
+      for (const feat of CATALOG.feats) {
+        if (!state.feats.has(feat.id)) continue;
+        if (feat.minLevel && state.level < feat.minLevel) {
+          warnings.push(`${feat.name} selected below suggested level ${feat.minLevel}.`);
+        }
+      }
+
+      if (!isRankAtLeast(state.proficiency, "trained")) {
+        dangers.push("Treat Wounds requires trained Medicine.");
+      }
+
+      if (!state.feats.has("battle-medicine")) {
+        warnings.push("Battle Medicine macros/tables are disabled until Battle Medicine is selected.");
+      }
+
+      if (!state.options.includeOptionalRules) {
+        warnings.push("Strict RAW mode is enabled; optional/house-rule entries are hidden.");
+      }
+
+      if (!state.options.macroTargetDefault && !state.options.macroTargetPf2e) {
+        dangers.push("No macro target selected. Enable at least one Roll20 macro target.");
+      }
+
+      if (state.feats.has("risky-surgery") && !isRankAtLeast(state.proficiency, "trained")) {
+        warnings.push("Risky Surgery requires trained Medicine.");
+      }
+
+      const chunks = [];
+      for (const w of warnings) chunks.push(`<div class="warn">${w}</div>`);
+      for (const d of dangers) chunks.push(`<div class="danger">${d}</div>`);
+      dom.warnings.innerHTML = chunks.join("");
+    }
+
+    function renderSelections(container, entries, stateSet, group) {
+      container.innerHTML = "";
+      for (const entry of entries) {
+        const id = `${group}-${entry.id}`;
+        const div = document.createElement("div");
+        div.className = "panel";
+        div.style.padding = "0.6rem";
+
+        const checked = stateSet.has(entry.id) ? "checked" : "";
+        const effects = (entry.effects || []).map((x) => `<li>${x}</li>`).join("");
+        div.innerHTML = `
+          <label for="${id}" style="color:var(--text);font-size:0.95rem;">
+            <input type="checkbox" id="${id}" ${checked} /> ${entry.name}
+          </label>
+          <div class="muted">Prereqs: ${(entry.prerequisites || ["-"]).join(", ")}</div>
+          <ul class="muted" style="padding-left:1rem; margin:0.35rem 0 0;">${effects}</ul>
+        `;
+
+        div.querySelector("input").addEventListener("change", (e) => {
+          if (e.target.checked) stateSet.add(entry.id);
+          else stateSet.delete(entry.id);
+          syncAndRender();
+        });
+
+        container.appendChild(div);
+      }
+    }
+
+    function readInputsToState() {
+      state.level = Number(dom.level.value);
+      state.wisdom = Number(dom.wisdom.value);
+      state.proficiency = dom.proficiency.value;
+      state.options.includeOptionalRules = !!dom.includeOptionalRules.checked;
+      state.options.macroTargetDefault = !!dom.macroTargetDefault.checked;
+      state.options.macroTargetPf2e = !!dom.macroTargetPf2e.checked;
+      state.manual.circumstance = Number(dom.manualCircumstance.value) || 0;
+      state.manual.item = Number(dom.manualItem.value) || 0;
+      state.manual.status = Number(dom.manualStatus.value) || 0;
+      state.manual.untyped = Number(dom.manualUntyped.value) || 0;
+    }
+
+    function writeStateToInputs() {
+      dom.level.value = String(state.level);
+      dom.wisdom.value = String(state.wisdom);
+      dom.proficiency.value = state.proficiency;
+      dom.includeOptionalRules.checked = !!state.options.includeOptionalRules;
+      dom.macroTargetDefault.checked = !!state.options.macroTargetDefault;
+      dom.macroTargetPf2e.checked = !!state.options.macroTargetPf2e;
+      dom.manualCircumstance.value = String(state.manual.circumstance);
+      dom.manualItem.value = String(state.manual.item);
+      dom.manualStatus.value = String(state.manual.status);
+      dom.manualUntyped.value = String(state.manual.untyped);
+    }
+
+    function encodeState() {
+      const payload = {
+        l: state.level,
+        w: state.wisdom,
+        p: state.proficiency,
+        f: [...state.feats],
+        i: [...state.items],
+        m: state.manual,
+        o: state.options
+      };
+      return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    }
+
+    function decodeState(encoded) {
+      try {
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+        if (decoded.l) state.level = decoded.l;
+        if (typeof decoded.w === "number") state.wisdom = decoded.w;
+        if (decoded.p && RANK_ORDER.includes(decoded.p)) state.proficiency = decoded.p;
+        if (Array.isArray(decoded.f)) state.feats = new Set(decoded.f);
+        if (Array.isArray(decoded.i)) state.items = new Set(decoded.i);
+        if (decoded.m) {
+          state.manual.circumstance = Number(decoded.m.circumstance) || 0;
+          state.manual.item = Number(decoded.m.item) || 0;
+          state.manual.status = Number(decoded.m.status) || 0;
+          state.manual.untyped = Number(decoded.m.untyped) || 0;
+        }
+        if (decoded.o) {
+          state.options.includeOptionalRules = !!decoded.o.includeOptionalRules;
+          state.options.macroTargetDefault = decoded.o.macroTargetDefault !== false;
+          state.options.macroTargetPf2e = decoded.o.macroTargetPf2e !== false;
+        }
+      } catch {
+        // ignored
+      }
+    }
+
+    function persistState() {
+      const encoded = encodeState();
+      localStorage.setItem("pf2e-medicine-calculator-state", encoded);
+      const url = new URL(window.location.href);
+      url.searchParams.set("state", encoded);
+      window.history.replaceState({}, "", url);
+    }
+
+    function loadState() {
+      const fromUrl = new URL(window.location.href).searchParams.get("state");
+      const fromLocal = localStorage.getItem("pf2e-medicine-calculator-state");
+      if (fromUrl) decodeState(fromUrl);
+      else if (fromLocal) decodeState(fromLocal);
+    }
+
+    function render() {
+      readInputsToState();
+
+      const treat = collectBonusesForAction("treatWounds", { riskySurgery: false });
+      const treatRisky = collectBonusesForAction("treatWounds", { riskySurgery: true });
+      const battle = collectBonusesForAction("battleMedicine");
+
+      dom.totalModBadge.textContent = `Total Medicine Modifier: ${treat.base >= 0 ? "+" : ""}${treat.base}`;
+      dom.twModBadge.textContent = `Treat Wounds Modifier: ${treat.total >= 0 ? "+" : ""}${treat.total}`;
+      dom.bmModBadge.textContent = `Battle Medicine Modifier: ${battle.total >= 0 ? "+" : ""}${battle.total}`;
+
+      renderTable(dom.tableTreat, "Treat Wounds", "treatWounds", treat.total, { riskySurgery: false });
+      renderTable(dom.tableRisky, "Treat Wounds + Risky Surgery", "treatWounds", treatRisky.total, { riskySurgery: true });
+      renderTable(dom.tableBattle, "Battle Medicine", "battleMedicine", battle.total, { riskySurgery: false });
+
+      renderMacroOutput(treat.total, treatRisky.total, battle.total);
+      warnings();
+      persistState();
+    }
+
+    function syncAndRender() {
+      pruneSelectionsForRulesProfile();
+      renderSelections(dom.feats, getVisibleCatalog("feats"), state.feats, "feat");
+      renderSelections(dom.items, getVisibleCatalog("items"), state.items, "item");
+      writeStateToInputs();
+      render();
+    }
+
+    function initialize() {
+      for (let lvl = 1; lvl <= 20; lvl++) {
+        const opt = document.createElement("option");
+        opt.value = String(lvl);
+        opt.textContent = String(lvl);
+        dom.level.appendChild(opt);
+      }
+
+      loadState();
+
+      [dom.level, dom.wisdom, dom.proficiency, dom.includeOptionalRules, dom.macroTargetDefault, dom.macroTargetPf2e, dom.manualCircumstance, dom.manualItem, dom.manualStatus, dom.manualUntyped]
+        .forEach((el) => el.addEventListener("input", render));
+
+      dom.includeOptionalRules.addEventListener("change", syncAndRender);
+
+      syncAndRender();
+    }
+
+    initialize();
+  </script>
+</body>
+</html>

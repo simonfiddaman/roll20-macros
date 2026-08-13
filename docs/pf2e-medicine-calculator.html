@@ -451,36 +451,41 @@
 
     const RAW_ITEMS = [
         {
-          id: "healers-gloves",
-          name: "Healer's Gloves",
-          ruleset: "raw",
-          actions: ["treatWounds", "battleMedicine"],
-          modifiers: [
-            { appliesTo: ["treatWounds", "battleMedicine"], type: "item", value: 1 }
-          ],
-          effects: ["Item bonus when used for Medicine checks (table-dependent; adjust via manual override if needed)."]
-        }
-    ];
-
-    const OPTIONAL_ITEMS = [
-        {
           id: "expanded-healers-tools",
-          name: "Expanded Healer's Tools (optional)",
+          name: "Expanded Healer's Tools",
           ruleset: "optional",
           actions: ["treatWounds", "battleMedicine"],
+          minLevel: 3,
           modifiers: [
             { appliesTo: ["treatWounds", "battleMedicine"], type: "item", value: 1 }
           ],
           effects: ["Potential item bonus from advanced tools depending on table rulings."]
         },
         {
-          id: "medics-visitation-kit",
-          name: "Medic's Visitation Kit (optional)",
-          ruleset: "optional",
+          id: "healers-gloves",
+          name: "Healer's Gloves",
+          ruleset: "raw",
           actions: ["treatWounds", "battleMedicine"],
-          modifiers: [],
-          effects: ["Utility/support item; no direct bonus applied by default."]
+          minLevel: 4,
+          modifiers: [
+            { appliesTo: ["treatWounds", "battleMedicine"], type: "item", value: 1 }
+          ],
+          effects: ["Item bonus when used for Medicine checks (table-dependent; adjust via manual override if needed)."]
+        },
+        {
+          id: "healers-gloves-greater",
+          name: "Healer's Gloves (Greater)",
+          ruleset: "raw",
+          actions: ["treatWounds", "battleMedicine"],
+          minLevel: 9,
+          modifiers: [
+            { appliesTo: ["treatWounds", "battleMedicine"], type: "item", value: 2 }
+          ],
+          effects: ["Item bonus when used for Medicine checks (table-dependent; adjust via manual override if needed)."]
         }
+    ];
+
+    const OPTIONAL_ITEMS = [
     ];
 
     const CATALOG = {
@@ -491,9 +496,9 @@
     const state = {
       level: 7,
       wisdom: 4,
-      proficiency: "expert",
-      feats: new Set(["battle-medicine", "risky-surgery"]),
-      items: new Set(["healers-gloves"]),
+      proficiency: "master",
+      feats: new Set(["battle-medicine", "continual-recovery", "paragon-battle-medicine", "risky-surgery", "ward-medic"]),
+      items: new Set(["expanded-healers-tools", "healers-gloves"]),
       manual: { circumstance: 0, item: 0, status: 0, untyped: 0 },
       options: { includeOptionalRules: false, macroTargetDefault: true, macroTargetPf2e: true }
     };
@@ -635,11 +640,11 @@
     }
 
     function outcomeText(result) {
-      if (result.degree === "critical_failure") return "CF";
-      if (result.degree === "failure") return "F";
-      if (result.degree === "success") return "S";
-      if (result.degree === "critical_success" && result.upgraded) return "S→CS";
-      return "CS";
+      if (result.degree === "critical_failure") return "Critical Failure";
+      if (result.degree === "failure") return "Failure";
+      if (result.degree === "success") return "Success";
+      if (result.degree === "critical_success" && result.upgraded) return "Modified Critical Success";
+      return "Critical Success";
     }
 
     function renderTable(target, title, action, modifier, options = {}) {

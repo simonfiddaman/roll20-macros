@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PF2e Medicine Calculator (Treat Wounds & Battle Medicine)</title>
+  <title>Pathfinder 2e Medicine Calculator (Treat Wounds & Battle Medicine)</title>
   <style>
     :root {
       --bg: #0b1220;
@@ -229,7 +229,7 @@
 <body>
   <main class="container">
     <section class="panel">
-      <h1>PF2e Medicine Calculator</h1>
+      <h1>Pathfinder 2e Medicine Calculator</h1>
       <p>Treat Wounds (with/without Risky Surgery) and Battle Medicine table + Roll20 macro generator.</p>
       <div class="legend">
         <span class="swatch cf">Critical Failure</span>
@@ -423,30 +423,6 @@
     ];
 
     const OPTIONAL_FEATS = [
-        {
-          id: "forensic-medicine-methodology",
-          name: "Forensic Medicine Methodology (optional)",
-          ruleset: "optional",
-          actions: ["battleMedicine"],
-          minLevel: 1,
-          prerequisites: ["Investigator methodology"],
-          modifiers: [
-            { appliesTo: ["battleMedicine"], type: "circumstance", value: 1 }
-          ],
-          effects: ["Conditional +1 circumstance bonus to Battle Medicine checks."]
-        },
-        {
-          id: "mortal-healing",
-          name: "Mortal Healing (optional)",
-          ruleset: "optional",
-          actions: ["treatWounds"],
-          minLevel: 2,
-          prerequisites: ["Harm trait faith restrictions"],
-          modifiers: [
-            { appliesTo: ["treatWounds"], type: "circumstance", value: 1 }
-          ],
-          effects: ["Conditional +1 circumstance to Treat Wounds checks in qualifying cases."]
-        }
     ];
 
     const RAW_ITEMS = [

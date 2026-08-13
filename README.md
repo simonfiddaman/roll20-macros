@@ -10,7 +10,7 @@
 
 - [Global macros](global.md)
 - [Reddit collections](examples/reddit-macros.md)
-- [PF2e Medicine Calculator webpage](pf2e-medicine-calculator.html)
+- [PF2e Medicine Calculator webpage (GitHub Pages/docs)](docs/pf2e-medicine-calculator.html)
 
 ## Carnival of Tears characters
 

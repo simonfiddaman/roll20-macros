@@ -318,13 +318,13 @@
     </section>
 
     <section class="panel">
-      <h2>Treat Wounds</h2>
-      <div id="table-treat"></div>
+      <h2>Treat Wounds + Risky Surgery</h2>
+      <div id="table-risky"></div>
     </section>
 
     <section class="panel">
-      <h2>Treat Wounds + Risky Surgery</h2>
-      <div id="table-risky"></div>
+      <h2>Treat Wounds</h2>
+      <div id="table-treat"></div>
     </section>
 
     <section class="panel">
@@ -494,7 +494,7 @@
     };
 
     const state = {
-      level: 7,
+      level: 8,
       wisdom: 4,
       proficiency: "master",
       feats: new Set(["battle-medicine", "continual-recovery", "paragon-battle-medicine", "risky-surgery", "ward-medic"]),
@@ -517,8 +517,8 @@
       manualStatus: document.getElementById("manual-status"),
       manualUntyped: document.getElementById("manual-untyped"),
       warnings: document.getElementById("warnings"),
-      tableTreat: document.getElementById("table-treat"),
       tableRisky: document.getElementById("table-risky"),
+      tableTreat: document.getElementById("table-treat"),
       tableBattle: document.getElementById("table-battle"),
       totalModBadge: document.getElementById("total-mod-badge"),
       twModBadge: document.getElementById("tw-mod-badge"),
@@ -970,11 +970,11 @@
       dom.twModBadge.textContent = `Treat Wounds Modifier: ${treat.total >= 0 ? "+" : ""}${treat.total}`;
       dom.bmModBadge.textContent = `Battle Medicine Modifier: ${battle.total >= 0 ? "+" : ""}${battle.total}`;
 
-      renderTable(dom.tableTreat, "Treat Wounds", "treatWounds", treat.total, { riskySurgery: false });
       renderTable(dom.tableRisky, "Treat Wounds + Risky Surgery", "treatWounds", treatRisky.total, { riskySurgery: true });
+      renderTable(dom.tableTreat, "Treat Wounds", "treatWounds", treat.total, { riskySurgery: false });
       renderTable(dom.tableBattle, "Battle Medicine", "battleMedicine", battle.total, { riskySurgery: false });
 
-      renderMacroOutput(treat.total, treatRisky.total, battle.total);
+      renderMacroOutput(treatRisky.total, treat.total, battle.total);
       warnings();
       persistState();
     }

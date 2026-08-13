@@ -209,6 +209,12 @@
       margin-top: 0.8rem;
     }
 
+    .macro-group-title {
+      margin: 0.35rem 0 0;
+      grid-column: 1 / -1;
+      font-size: 1rem;
+    }
+
     .actions {
       display: flex;
       gap: 0.5rem;
@@ -266,7 +272,7 @@
       <div class="grid">
         <label for="include-optional-rules" style="display:flex;align-items:center;gap:0.35rem;">
           <input id="include-optional-rules" type="checkbox" />
-          Include optional/house-rule additions
+          Include house-rule additions
         </label>
       </div>
 
@@ -330,7 +336,7 @@
     <section class="panel">
       <h2>Battle Medicine</h2>
       <div id="table-battle"></div>
-      <p class="muted">Risky Surgery only applies to Treat Wounds by RAW and is not applied to Battle Medicine.</p>
+      <p class="muted">Risky Surgery only applies to Treat Wounds by RAW unless the Battle Medicine house rule is enabled.</p>
     </section>
 
     <section class="panel">
@@ -349,8 +355,8 @@
         <li>Typed bonuses (circumstance, item, status) use highest value only; untyped bonuses stack.</li>
         <li>Risky Surgery adds +2 circumstance to Treat Wounds and upgrades success to critical success.</li>
         <li>Battle Medicine availability requires the Battle Medicine feat toggle.</li>
-        <li>Optional additions are hidden in strict RAW mode unless the optional toggle is enabled.</li>
-        <li>Initial optional set included: Forensic Medicine Methodology, Mortal Healing, Expanded Healer's Tools, Medic's Visitation Kit.</li>
+        <li>House-rule additions are hidden unless the house-rule toggle is enabled.</li>
+        <li>House-rule set included: Risky Surgery on Battle Medicine.</li>
         <li>Cooldown, target count, and immunity changes are informational notes in output/macros.</li>
       </ul>
     </section>
@@ -423,6 +429,18 @@
     ];
 
     const OPTIONAL_FEATS = [
+        {
+          id: "risky-surgery-battle-medicine",
+          name: "Risky Surgery applies to Battle Medicine (house rule)",
+          ruleset: "optional",
+          actions: ["battleMedicine"],
+          minLevel: 1,
+          prerequisites: ["Risky Surgery", "Battle Medicine"],
+          modifiers: [
+            { appliesTo: ["battleMedicine"], type: "circumstance", value: 2, requires: "riskySurgery" }
+          ],
+          effects: ["Deal 1d8 slashing damage before Battle Medicine.", "Battle Medicine success becomes critical success while using Risky Surgery."]
+        }
     ];
 
     const RAW_ITEMS = [
@@ -515,6 +533,13 @@
       return CATALOG[group].filter(isEntryEnabled);
     }
 
+    function isBattleMedicineRiskySurgeryActive() {
+      return state.options.includeOptionalRules
+        && state.feats.has("risky-surgery")
+        && state.feats.has("battle-medicine")
+        && state.feats.has("risky-surgery-battle-medicine");
+    }
+
     function pruneSelectionsForRulesProfile() {
       const enabledFeatIds = new Set(getVisibleCatalog("feats").map((entry) => entry.id));
       const enabledItemIds = new Set(getVisibleCatalog("items").map((entry) => entry.id));
@@ -590,7 +615,9 @@
       let degree = baseDegree;
       let upgraded = false;
 
-      if (options.riskySurgery && action === "treatWounds" && degree === "success") {
+      const canUpgradeSuccess = action === "treatWounds"
+        || (action === "battleMedicine" && options.allowRiskySurgeryForBattleMedicine);
+      if (options.riskySurgery && canUpgradeSuccess && degree === "success") {
         degree = "critical_success";
         upgraded = true;
       }
@@ -662,6 +689,36 @@
       return num >= 0 ? `+${num}` : `${num}`;
     }
 
+    function firstRollForDegree(action, modifier, dc, wantedDegree, options = {}) {
+      for (let roll = 1; roll <= 20; roll++) {
+        const total = roll + modifier;
+        const result = evaluateOutcome(action, roll, total, dc, options);
+        if (result.degree === wantedDegree) return roll;
+      }
+      return null;
+    }
+
+    function medicineCheckRollExpression(action, modifier, dc, options = {}) {
+      const cfRoll = firstRollForDegree(action, modifier, dc, "critical_failure", options);
+      const csRoll = firstRollForDegree(action, modifier, dc, "critical_success", options);
+      const cfPart = `cf${cfRoll ?? 0}`;
+      const csPart = `cs>${csRoll ?? 20}`;
+      return `1d20${cfPart}${csPart} ${sanitizeBonus(modifier)}`;
+    }
+
+    function rollButton(rollExpression, label = "Roll") {
+      return `[${label}](\`/r ${rollExpression}\`)`;
+    }
+
+    function damageRollExpression() {
+      return "1d8cf>1cs9";
+    }
+
+    function healingRollExpression(diceCount, healBonus, isCritical) {
+      const csPart = isCritical ? "cs>1" : "cs9";
+      return `${diceCount}d8cf0${csPart}+${healBonus}`;
+    }
+
     function macroNotes(actionName, options = {}) {
       const notes = [];
       if (actionName.startsWith("Treat Wounds")) {
@@ -671,6 +728,7 @@
       }
       if (actionName === "Battle Medicine") {
         notes.push(state.feats.has("paragon-battle-medicine") ? "Paragon Battle Medicine immunity rules apply." : "Immune 1 day.");
+        if (options.riskySurgery) notes.push("House rule: Risky Surgery applies to Battle Medicine.");
       }
       return notes;
     }
@@ -678,15 +736,17 @@
     function macroForActionDefault(actionName, modifier, dc, healBonus, options = {}) {
       const title = `${actionName} (DC ${dc})`;
       const notes = macroNotes(actionName, options);
+      const action = actionName.startsWith("Treat Wounds") ? "treatWounds" : "battleMedicine";
+      const medicineCheck = medicineCheckRollExpression(action, modifier, dc, options);
 
       const lines = [
         `&{template:default} {{name=${title}}`,
-        options.riskySurgery ? "{{Risky Surgery Damage=[[1d8]] slashing}}" : "",
-        `{{Medicine Check=[[1d20 ${sanitizeBonus(modifier)}]] vs DC ${dc}}}`,
-        `{{Critical Success=[[4d8+${healBonus}]] HP recovered}}`,
-        `{{Success=[[2d8+${healBonus}]] HP recovered}}`,
+        options.riskySurgery ? `{{Risky Surgery Damage=${rollButton(damageRollExpression())} slashing}}` : "",
+        `{{Medicine Check=[[${medicineCheck}]] vs DC ${dc}}}`,
+        `{{Critical Success=${rollButton(healingRollExpression(4, healBonus, true))} HP recovered}}`,
+        `{{Success=${rollButton(healingRollExpression(2, healBonus, false))} HP recovered}}`,
         "{{Failure=0 HP recovered}}",
-        "{{Critical Failure=[[1d8]] damage}}",
+        `{{Critical Failure=${rollButton(damageRollExpression())} damage}}`,
         `{{notes=${notes.join(" ")}}}`
       ];
       return lines.filter(Boolean).join("");
@@ -695,24 +755,27 @@
     function macroForActionPf2e(actionName, modifier, dc, healBonus, options = {}) {
       const title = `${actionName} (DC ${dc})`;
       const notes = macroNotes(actionName, options).join(" ");
+      const action = actionName.startsWith("Treat Wounds") ? "treatWounds" : "battleMedicine";
+      const medicineCheck = medicineCheckRollExpression(action, modifier, dc, options);
+      const effectLines = [
+        `Critical Success: ${rollButton(healingRollExpression(4, healBonus, true))} HP recovered`,
+        `Success: ${rollButton(healingRollExpression(2, healBonus, false))} HP recovered`,
+        "Failure: 0 HP recovered",
+        `Critical Failure: ${rollButton(damageRollExpression())} damage`
+      ];
+      if (options.riskySurgery) {
+        effectLines.push(`Risky Surgery Damage: ${rollButton(damageRollExpression())} slashing`);
+      }
+      if (notes) effectLines.push(`Notes: ${notes}`);
       const parts = [
         "@{selected|whispertype} &{template:rolls}",
         "{{charactername=@{selected|character_name}}}",
         `{{header=${title}}}`,
         "{{subheader=Medicine}}",
-        `{{roll01=[[1d20cs20cf1 ${sanitizeBonus(modifier)}]]}}`,
+        `{{roll01=[[${medicineCheck}]]}}`,
         "{{roll01_type=skill}}",
         "{{roll01_info=Medicine Check}}",
-        `{{roll02=[[4d8+${healBonus}]]}}`,
-        "{{roll02_type=heal}}",
-        "{{roll02_info=Critical Success}}",
-        `{{roll03=[[2d8+${healBonus}]]}}`,
-        "{{roll03_type=heal}}",
-        "{{roll03_info=Success}}",
-        "{{roll04=[[1d8]]}}",
-        "{{roll04_type=damage}}",
-        options.riskySurgery ? "{{roll05=[[1d8]]}}{{roll05_type=damage}}{{roll05_info=Risky Surgery self-damage}}" : "",
-        notes ? `{{desc=${notes}}}` : ""
+        `{{desc=${effectLines.join("<br>")}}}`
       ];
       return parts.filter(Boolean).join(" ");
     }
@@ -741,14 +804,21 @@
       return wrapper;
     }
 
-    function appendMacroSet(allMacros, labelPrefix, actionName, modifier, tier, options = {}) {
-      if (state.options.macroTargetDefault) {
+    function createMacroGroupTitle(name) {
+      const title = document.createElement("h3");
+      title.className = "macro-group-title";
+      title.textContent = name;
+      return title;
+    }
+
+    function appendMacroSet(allMacros, targetKind, labelPrefix, actionName, modifier, tier, options = {}) {
+      if (targetKind === "default") {
         const defaultMacro = macroForActionDefault(actionName, modifier, tier.dc, tier.healBonus, options);
         const blockName = `${labelPrefix} DC ${tier.dc} (Default template)`;
         dom.macroOutput.appendChild(createMacroBlock(blockName, defaultMacro));
         allMacros.push(`# ${blockName}\n${defaultMacro}`);
       }
-      if (state.options.macroTargetPf2e) {
+      if (targetKind === "pf2e") {
         const pf2eMacro = macroForActionPf2e(actionName, modifier, tier.dc, tier.healBonus, options);
         const blockName = `${labelPrefix} DC ${tier.dc} (PF2e sheet)`;
         dom.macroOutput.appendChild(createMacroBlock(blockName, pf2eMacro));
@@ -756,7 +826,7 @@
       }
     }
 
-    function renderMacroOutput(treatMod, riskyTreatMod, battleMod) {
+    function renderMacroOutput(riskyTreatMod, treatMod, battleMod, battleOptions = {}) {
       const tiers = availableDcTiers();
       dom.macroOutput.innerHTML = "";
       const allMacros = [];
@@ -767,17 +837,53 @@
         return;
       }
 
+      const macroPlans = [];
       for (const tier of tiers) {
         if (state.feats.has("risky-surgery")) {
-          appendMacroSet(allMacros, "Treat Wounds + Risky Surgery", "Treat Wounds + Risky Surgery", riskyTreatMod, tier, { riskySurgery: true });
+          macroPlans.push({
+            labelPrefix: "Treat Wounds + Risky Surgery",
+            actionName: "Treat Wounds + Risky Surgery",
+            modifier: riskyTreatMod,
+            tier,
+            options: { riskySurgery: true }
+          });
         }
-
-        appendMacroSet(allMacros, "Treat Wounds", "Treat Wounds", treatMod, tier, { riskySurgery: false });
+      }
+      for (const tier of tiers) {
+        macroPlans.push({
+          labelPrefix: "Treat Wounds",
+          actionName: "Treat Wounds",
+          modifier: treatMod,
+          tier,
+          options: { riskySurgery: false }
+        });
       }
 
       if (state.feats.has("battle-medicine")) {
         for (const tier of tiers) {
-          appendMacroSet(allMacros, "Battle Medicine", "Battle Medicine", battleMod, tier, { riskySurgery: false });
+          macroPlans.push({
+            labelPrefix: battleOptions.riskySurgery ? "Battle Medicine + Risky Surgery (House Rule)" : "Battle Medicine",
+            actionName: battleOptions.riskySurgery ? "Battle Medicine + Risky Surgery" : "Battle Medicine",
+            modifier: battleMod,
+            tier,
+            options: battleOptions
+          });
+        }
+      }
+
+      if (state.options.macroTargetDefault) {
+        dom.macroOutput.appendChild(createMacroGroupTitle("Default template macros"));
+        allMacros.push("## Default template macros");
+        for (const plan of macroPlans) {
+          appendMacroSet(allMacros, "default", plan.labelPrefix, plan.actionName, plan.modifier, plan.tier, plan.options);
+        }
+      }
+
+      if (state.options.macroTargetPf2e) {
+        dom.macroOutput.appendChild(createMacroGroupTitle("PF2e sheet macros"));
+        allMacros.push("## PF2e sheet macros");
+        for (const plan of macroPlans) {
+          appendMacroSet(allMacros, "pf2e", plan.labelPrefix, plan.actionName, plan.modifier, plan.tier, plan.options);
         }
       }
 
@@ -811,8 +917,8 @@
         warnings.push("Battle Medicine macros/tables are disabled until Battle Medicine is selected.");
       }
 
-      if (!state.options.includeOptionalRules) {
-        warnings.push("Strict RAW mode is enabled; optional/house-rule entries are hidden.");
+      if (state.options.includeOptionalRules) {
+        warnings.push("House-rule additions are active.");
       }
 
       if (!state.options.macroTargetDefault && !state.options.macroTargetPf2e) {
@@ -938,9 +1044,10 @@
     function render() {
       readInputsToState();
 
+      const battleUsesRiskySurgery = isBattleMedicineRiskySurgeryActive();
       const treatRisky = collectBonusesForAction("treatWounds", { riskySurgery: true });
       const treat = collectBonusesForAction("treatWounds", { riskySurgery: false });
-      const battle = collectBonusesForAction("battleMedicine");
+      const battle = collectBonusesForAction("battleMedicine", { riskySurgery: battleUsesRiskySurgery });
 
       dom.totalModBadge.textContent = `Total Medicine Modifier: ${treat.base >= 0 ? "+" : ""}${treat.base}`;
       dom.twModBadge.textContent = `Treat Wounds Modifier: ${treat.total >= 0 ? "+" : ""}${treat.total}`;
@@ -948,9 +1055,15 @@
 
       renderTable(dom.tableRisky, "Treat Wounds + Risky Surgery", "treatWounds", treatRisky.total, { riskySurgery: true });
       renderTable(dom.tableTreat, "Treat Wounds", "treatWounds", treat.total, { riskySurgery: false });
-      renderTable(dom.tableBattle, "Battle Medicine", "battleMedicine", battle.total, { riskySurgery: false });
+      renderTable(dom.tableBattle, battleUsesRiskySurgery ? "Battle Medicine + Risky Surgery (House Rule)" : "Battle Medicine", "battleMedicine", battle.total, {
+        riskySurgery: battleUsesRiskySurgery,
+        allowRiskySurgeryForBattleMedicine: battleUsesRiskySurgery
+      });
 
-      renderMacroOutput(treatRisky.total, treat.total, battle.total);
+      renderMacroOutput(treatRisky.total, treat.total, battle.total, {
+        riskySurgery: battleUsesRiskySurgery,
+        allowRiskySurgeryForBattleMedicine: battleUsesRiskySurgery
+      });
       warnings();
       persistState();
     }

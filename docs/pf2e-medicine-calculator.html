@@ -324,11 +324,6 @@
     </section>
 
     <section class="panel">
-      <h2>Treat Wounds + Risky Surgery</h2>
-      <div id="table-risky"></div>
-    </section>
-
-    <section class="panel">
       <h2>Treat Wounds</h2>
       <div id="table-treat"></div>
     </section>
@@ -511,7 +506,6 @@
       manualStatus: document.getElementById("manual-status"),
       manualUntyped: document.getElementById("manual-untyped"),
       warnings: document.getElementById("warnings"),
-      tableRisky: document.getElementById("table-risky"),
       tableTreat: document.getElementById("table-treat"),
       tableBattle: document.getElementById("table-battle"),
       totalModBadge: document.getElementById("total-mod-badge"),
@@ -1048,13 +1042,17 @@
       const treatRisky = collectBonusesForAction("treatWounds", { riskySurgery: true });
       const treat = collectBonusesForAction("treatWounds", { riskySurgery: false });
       const battle = collectBonusesForAction("battleMedicine", { riskySurgery: battleUsesRiskySurgery });
+      const treatRiskyActive = state.feats.has("risky-surgery");
+      const activeTreatModifier = treatRiskyActive ? treatRisky.total : treat.total;
 
       dom.totalModBadge.textContent = `Total Medicine Modifier: ${treat.base >= 0 ? "+" : ""}${treat.base}`;
-      dom.twModBadge.textContent = `Treat Wounds Modifier: ${treat.total >= 0 ? "+" : ""}${treat.total}`;
+      dom.twModBadge.textContent = `Treat Wounds Modifier: ${activeTreatModifier >= 0 ? "+" : ""}${activeTreatModifier}`;
       dom.bmModBadge.textContent = `Battle Medicine Modifier: ${battle.total >= 0 ? "+" : ""}${battle.total}`;
 
-      renderTable(dom.tableRisky, "Treat Wounds + Risky Surgery", "treatWounds", treatRisky.total, { riskySurgery: true });
-      renderTable(dom.tableTreat, "Treat Wounds", "treatWounds", treat.total, { riskySurgery: false });
+      renderTable(dom.tableTreat, treatRiskyActive ? "Treat Wounds + Risky Surgery" : "Treat Wounds", "treatWounds", activeTreatModifier, {
+        riskySurgery: treatRiskyActive,
+        allowRiskySurgeryForBattleMedicine: false
+      });
       renderTable(dom.tableBattle, battleUsesRiskySurgery ? "Battle Medicine + Risky Surgery (House Rule)" : "Battle Medicine", "battleMedicine", battle.total, {
         riskySurgery: battleUsesRiskySurgery,
         allowRiskySurgeryForBattleMedicine: battleUsesRiskySurgery

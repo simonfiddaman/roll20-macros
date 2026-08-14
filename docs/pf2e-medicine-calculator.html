@@ -734,7 +734,7 @@
       const medicineCheck = medicineCheckRollExpression(action, modifier, dc, options);
 
       const lines = [
-        `&{template:default} {{name=${title}}`,
+        `&{template:default} {{name=${title}}}`,
         options.riskySurgery ? `{{Risky Surgery Damage=${rollButton(damageRollExpression())} slashing}}` : "",
         `{{Medicine Check=[[${medicineCheck}]] vs DC ${dc}}}`,
         `{{Critical Success=${rollButton(healingRollExpression(4, healBonus, true))} HP recovered}}`,

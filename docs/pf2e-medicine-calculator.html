@@ -151,8 +151,9 @@
 
     th, td {
       border: 1px solid var(--border);
+      border-radius: 10px;
       padding: 0.35rem 0.45rem;
-      text-align: center;
+      text-align: left;
       font-size: 0.82rem;
     }
 
@@ -226,7 +227,7 @@
     .rules-list li { margin-bottom: 0.25rem; }
 
     @media (max-width: 680px) {
-      table { min-width: 620px; }
+      table { min-width: 320px; }
       .container { padding: 0.7rem; }
       .panel { padding: 0.8rem; }
     }
@@ -320,6 +321,8 @@
         <span class="badge" id="total-mod-badge">Total Medicine Modifier: +0</span>
         <span class="badge" id="tw-mod-badge">Treat Wounds Modifier: +0</span>
         <span class="badge" id="bm-mod-badge">Battle Medicine Modifier: +0</span>
+        <span class="badge" id="effective-prof-badge">Effective Medicine: Trained</span>
+        <span class="badge" id="assurance-badge">Assurance (Medicine): unavailable</span>
       </div>
     </section>
 
@@ -352,6 +355,8 @@
         <li>Battle Medicine availability requires the Battle Medicine feat toggle.</li>
         <li>House-rule additions are hidden unless the house-rule toggle is enabled.</li>
         <li>House-rule set included: Risky Surgery on Battle Medicine.</li>
+        <li>Medic Dedication raises Medicine to expert if it was only trained, and adds +5/+10/+15 HP to successful Treat Wounds or Battle Medicine at DC 20/30/40.</li>
+        <li>Assurance (Medicine) uses 10 + proficiency bonus and ignores all other bonuses, penalties, and modifiers; it is shown as an alternative fixed-result check.</li>
         <li>Cooldown, target count, and immunity changes are informational notes in output/macros.</li>
       </ul>
     </section>
@@ -420,6 +425,33 @@
           prerequisites: ["Expert in Medicine"],
           modifiers: [],
           effects: ["Increases number of Treat Wounds targets (informational)."]
+        },
+        {
+          id: "medic-dedication",
+          name: "Medic Dedication",
+          ruleset: "raw",
+          actions: ["treatWounds", "battleMedicine"],
+          minLevel: 2,
+          prerequisites: ["Trained in Medicine", "Battle Medicine"],
+          modifiers: [],
+          effects: [
+            "Become expert in Medicine.",
+            "On a success with Treat Wounds or Battle Medicine, regain 5 additional HP at DC 20, 10 at DC 30, or 15 at DC 40.",
+            "Once per day, Battle Medicine can target a creature temporarily immune to your Battle Medicine; at master Medicine, this is once per hour."
+          ]
+        },
+        {
+          id: "assurance-medicine",
+          name: "Assurance (Medicine)",
+          ruleset: "raw",
+          actions: ["treatWounds", "battleMedicine"],
+          minLevel: 1,
+          prerequisites: ["Trained in Medicine"],
+          modifiers: [],
+          effects: [
+            "You can forgo rolling a Medicine check and use 10 + your proficiency bonus instead.",
+            "Assurance ignores all other bonuses, penalties, and modifiers."
+          ]
         }
     ];
 
@@ -511,12 +543,21 @@
       totalModBadge: document.getElementById("total-mod-badge"),
       twModBadge: document.getElementById("tw-mod-badge"),
       bmModBadge: document.getElementById("bm-mod-badge"),
+      effectiveProfBadge: document.getElementById("effective-prof-badge"),
+      assuranceBadge: document.getElementById("assurance-badge"),
       macroOutput: document.getElementById("macro-output"),
       copyAll: document.getElementById("copy-all")
     };
 
     function isRankAtLeast(rank, needed) {
       return RANK_ORDER.indexOf(rank) >= RANK_ORDER.indexOf(needed);
+    }
+
+    function effectiveProficiency() {
+      if (state.feats.has("medic-dedication") && isRankAtLeast(state.proficiency, "trained")) {
+        return isRankAtLeast(state.proficiency, "expert") ? state.proficiency : "expert";
+      }
+      return state.proficiency;
     }
 
     function isEntryEnabled(entry) {
@@ -551,7 +592,7 @@
       const typed = { circumstance: [], item: [], status: [] };
       let untypedTotal = 0;
 
-      const base = state.level + PROFICIENCY_BONUS[state.proficiency] + state.wisdom;
+      const base = state.level + PROFICIENCY_BONUS[effectiveProficiency()] + state.wisdom;
 
       for (const entry of getSelectedEntries()) {
         for (const mod of (entry.modifiers || [])) {
@@ -582,7 +623,29 @@
     }
 
     function availableDcTiers() {
-      return DC_TIERS.filter((tier) => isRankAtLeast(state.proficiency, tier.required));
+      return DC_TIERS.filter((tier) => isRankAtLeast(effectiveProficiency(), tier.required));
+    }
+
+    function medicHealingBonus(tier) {
+      if (!state.feats.has("medic-dedication")) return 0;
+      if (tier.dc === 20) return 5;
+      if (tier.dc === 30) return 10;
+      if (tier.dc === 40) return 15;
+      return 0;
+    }
+
+    function healingBonusForTier(tier) {
+      return tier.healBonus + medicHealingBonus(tier);
+    }
+
+    function assuranceResult() {
+      return 10 + state.level + PROFICIENCY_BONUS[effectiveProficiency()];
+    }
+
+    function assuranceOutcome(rollTotal, dc) {
+      if (rollTotal >= dc + 10) return "critical_success";
+      if (rollTotal >= dc) return "success";
+      return "failure";
     }
 
     function stepDegree(degree, amount) {
@@ -640,7 +703,7 @@
       if (result.degree === "critical_failure") return "Critical Failure";
       if (result.degree === "failure") return "Failure";
       if (result.degree === "success") return "Success";
-      if (result.degree === "critical_success" && result.upgraded) return "Modified Critical Success";
+      if (result.degree === "critical_success" && result.upgraded) return "Mod Crit Success";
       return "Critical Success";
     }
 
@@ -665,11 +728,13 @@
 
       for (let roll = 1; roll <= 20; roll++) {
         const total = roll + modifier;
-        html += `<tr><td class="roll-col">${roll}</td><td>${total}</td>`;
+        if (roll === 1) html += `<tr><td class="roll-col outcome-critical_failure">1</td><td>${total}</td>`;
+        else if (roll === 20) html += `<tr><td class="roll-col outcome-critical_success">20</td><td>${total}</td>`;
+        else html += `<tr><td class="roll-col">${roll}</td><td>${total}</td>`;
         for (const tier of tiers) {
           const result = evaluateOutcome(action, roll, total, tier.dc, options);
-          const effect = effectLabel(action, result.degree, tier.healBonus, options.riskySurgery);
-          html += `<td class="${outcomeClass(result)}">${outcomeText(result)}<br><small>${effect}</small></td>`;
+          const effect = effectLabel(action, result.degree, healingBonusForTier(tier), options.riskySurgery);
+          html += `<td class="${outcomeClass(result)}" style="border-style: outset;">${outcomeText(result)}<br><small>${effect}</small></td>`;
         }
         html += "</tr>";
       }
@@ -724,11 +789,18 @@
         notes.push(state.feats.has("paragon-battle-medicine") ? "Paragon Battle Medicine immunity rules apply." : "Immune 1 day.");
         if (options.riskySurgery) notes.push("House rule: Risky Surgery applies to Battle Medicine.");
       }
+      if (state.feats.has("medic-dedication")) {
+        notes.push("Medic Dedication: +5/+10/+15 HP at DC 20/30/40 on success.");
+      }
+      if (state.feats.has("assurance-medicine")) {
+        notes.push(`Assurance (Medicine): fixed check result ${assuranceResult()} (ignores other modifiers).`);
+      }
       return notes;
     }
 
     function macroForActionDefault(actionName, modifier, dc, healBonus, options = {}) {
       const title = `${actionName} (DC ${dc})`;
+      const effectiveHealBonus = healBonus + (state.feats.has("medic-dedication") && dc >= 20 ? (dc === 20 ? 5 : dc === 30 ? 10 : dc === 40 ? 15 : 0) : 0);
       const notes = macroNotes(actionName, options);
       const action = actionName.startsWith("Treat Wounds") ? "treatWounds" : "battleMedicine";
       const medicineCheck = medicineCheckRollExpression(action, modifier, dc, options);
@@ -737,8 +809,8 @@
         `&{template:default} {{name=${title}}}`,
         options.riskySurgery ? `{{Risky Surgery Damage=${rollButton(damageRollExpression())} slashing}}` : "",
         `{{Medicine Check=[[${medicineCheck}]] vs DC ${dc}}}`,
-        `{{Critical Success=${rollButton(healingRollExpression(4, healBonus, true))} HP recovered}}`,
-        `{{Success=${rollButton(healingRollExpression(2, healBonus, false))} HP recovered}}`,
+        `{{Critical Success=${rollButton(healingRollExpression(4, effectiveHealBonus, true))} HP recovered}}`,
+        `{{Success=${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered}}`,
         "{{Failure=0 HP recovered}}",
         `{{Critical Failure=${rollButton(damageRollExpression())} damage}}`,
         `{{notes=${notes.join(" ")}}}`
@@ -748,12 +820,13 @@
 
     function macroForActionPf2e(actionName, modifier, dc, healBonus, options = {}) {
       const title = `${actionName} (DC ${dc})`;
+      const effectiveHealBonus = healBonus + (state.feats.has("medic-dedication") && dc >= 20 ? (dc === 20 ? 5 : dc === 30 ? 10 : dc === 40 ? 15 : 0) : 0);
       const notes = macroNotes(actionName, options).join(" ");
       const action = actionName.startsWith("Treat Wounds") ? "treatWounds" : "battleMedicine";
       const medicineCheck = medicineCheckRollExpression(action, modifier, dc, options);
       const effectLines = [
-        `Critical Success: ${rollButton(healingRollExpression(4, healBonus, true))} HP recovered`,
-        `Success: ${rollButton(healingRollExpression(2, healBonus, false))} HP recovered`,
+        `Critical Success: ${rollButton(healingRollExpression(4, effectiveHealBonus, true))} HP recovered`,
+        `Success: ${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered`,
         "Failure: 0 HP recovered",
         `Critical Failure: ${rollButton(damageRollExpression())} damage`
       ];
@@ -894,6 +967,14 @@
 
       if (state.feats.has("paragon-battle-medicine") && !state.feats.has("battle-medicine")) {
         warnings.push("Paragon Battle Medicine selected without Battle Medicine.");
+      }
+
+      if (state.feats.has("medic-dedication") && !state.feats.has("battle-medicine")) {
+        warnings.push("Medic Dedication requires Battle Medicine.");
+      }
+
+      if (state.feats.has("assurance-medicine") && !isRankAtLeast(state.proficiency, "trained")) {
+        warnings.push("Assurance (Medicine) requires trained Medicine.");
       }
 
       for (const feat of CATALOG.feats) {
@@ -1048,6 +1129,19 @@
       dom.totalModBadge.textContent = `Total Medicine Modifier: ${treat.base >= 0 ? "+" : ""}${treat.base}`;
       dom.twModBadge.textContent = `Treat Wounds Modifier: ${activeTreatModifier >= 0 ? "+" : ""}${activeTreatModifier}`;
       dom.bmModBadge.textContent = `Battle Medicine Modifier: ${battle.total >= 0 ? "+" : ""}${battle.total}`;
+      const effectiveRank = effectiveProficiency();
+      dom.effectiveProfBadge.textContent = state.feats.has("medic-dedication")
+        ? `Effective Medicine: ${effectiveRank} (Medic Dedication)`
+        : `Effective Medicine: ${effectiveRank}`;
+
+      if (state.feats.has("assurance-medicine")) {
+        const result = assuranceResult();
+        dom.assuranceBadge.textContent = `Assurance (Medicine): ${result}`;
+        dom.assuranceBadge.title = `Fixed result 10 + proficiency bonus. At this result, DCs up to ${result} succeed and DCs up to ${result - 10} critically succeed.`;
+      } else {
+        dom.assuranceBadge.textContent = "Assurance (Medicine): unavailable";
+        dom.assuranceBadge.title = "";
+      }
 
       renderTable(dom.tableTreat, treatRiskyActive ? "Treat Wounds + Risky Surgery" : "Treat Wounds", "treatWounds", activeTreatModifier, {
         riskySurgery: treatRiskyActive,

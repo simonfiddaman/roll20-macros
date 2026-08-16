@@ -854,21 +854,22 @@
       const medicineCheck = medicineCheckRollExpression(action, modifier, dc, options);
       const effectLines = [];
       if (options.riskySurgery) {
-        effectLines.push(`Risky Surgery Damage: ${rollButton(damageRollExpression())} slashing`);
+        effectLines.push();
       }
       if (notes) effectLines.push(`Notes: ${notes}`);
       const parts = [
         "@{selected|whispertype} &{template:rolls}",
         "{{charactername=@{selected|character_name}}}",
         `{{header=${title}}}`,
-        "{{subheader=Medicine}}",
+        options.riskySurgery ? "{{subheader=Medicine + Risky Surgery}}" : "{{subheader=Medicine}}",
+        options.riskySurgery ? `{{roll01misc=Risky Surgery Damage: [[${damageRollExpression()}]] slashing}}` : "",
         `{{roll01=[[${medicineCheck}]]}}`,
         "{{roll01_type=skill}}",
         "{{roll01_info=Medicine Check}}",
-        `{{roll02misc=[^{roll} ^{critical success}](${rollButton(healingRollExpression(4, effectiveHealBonus, true))})}}`,
-        `{{roll03misc=[^{roll} ^{damage}](Success: ${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered)}}`,
-        `{{roll04misc=[^{roll} ^{damage}](Failure: 0 HP recovered)}}`,
-        `{{roll05misc=[^{roll} ^{damage}](Critical Failure: ${rollButton(damageRollExpression())} damage)}}`
+        `{{roll02misc=Critical Success: ${rollButton(healingRollExpression(4, effectiveHealBonus, true))} HP recovered}}`,
+        `{{roll03misc=Success: ${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered}}`,
+        `{{roll04misc=Failure: 0 HP recovered}}`,
+        `{{roll05misc=Critical Failure: ${rollButton(damageRollExpression())} damage}}`
       ];
       return parts.filter(Boolean).join(" ");
     }

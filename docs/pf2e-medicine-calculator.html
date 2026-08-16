@@ -151,9 +151,8 @@
 
     th, td {
       border: 1px solid var(--border);
-      border-radius: 10px;
       padding: 0.35rem 0.45rem;
-      text-align: left;
+      text-align: center;
       font-size: 0.82rem;
     }
 
@@ -719,8 +718,9 @@
         return;
       }
 
-      let html = `<p class="muted">${title} modifier: <strong>${modifier >= 0 ? "+" : ""}${modifier}</strong></p>`;
+      let html = `<p class="muted">${title} modifier: <strong>${modifier >= 0 ? "+" : ""}${modifier}</strong></p><div class="legend"><span class="swatch cf">Critical Failure</span><span class="swatch f">Failure</span><span class="swatch s">Success</span><span class="swatch csm">Modified Critical Success</span><span class="swatch cs">Critical Success</span></div></p>`;
       html += `<div class="table-wrap"><table><thead><tr><th>Roll</th><th>Total</th>`;
+
       for (const tier of tiers) {
         html += `<th>DC ${tier.dc} (${tier.label})</th>`;
       }
@@ -734,7 +734,7 @@
         for (const tier of tiers) {
           const result = evaluateOutcome(action, roll, total, tier.dc, options);
           const effect = effectLabel(action, result.degree, healingBonusForTier(tier), options.riskySurgery);
-          html += `<td class="${outcomeClass(result)}" style="border-style: outset;">${outcomeText(result)}<br><small>${effect}</small></td>`;
+          html += `<td class="${outcomeClass(result)}" style="border-style: outset;"><small>${effect}</small></td>`;
         }
         html += "</tr>";
       }
@@ -760,7 +760,7 @@
     function medicineCheckRollExpression(action, modifier, dc, options = {}) {
       const cfRoll = firstRollForDegree(action, modifier, dc, "critical_failure", options);
       const csRoll = firstRollForDegree(action, modifier, dc, "critical_success", options);
-      const cfPart = `cf${cfRoll ?? 0}`;
+      const cfPart = `cf<${cfRoll ?? 0}`;
       const csPart = `cs>${csRoll ?? 20}`;
       return `1d20${cfPart}${csPart} ${sanitizeBonus(modifier)}`;
     }
@@ -806,16 +806,16 @@
       const medicineCheck = medicineCheckRollExpression(action, modifier, dc, options);
 
       const lines = [
-        `&{template:default} {{name=${title}}}`,
-        options.riskySurgery ? `{{Risky Surgery Damage=${rollButton(damageRollExpression())} slashing}}` : "",
-        `{{Medicine Check=[[${medicineCheck}]] vs DC ${dc}}}`,
-        `{{Critical Success=${rollButton(healingRollExpression(4, effectiveHealBonus, true))} HP recovered}}`,
-        `{{Success=${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered}}`,
-        "{{Failure=0 HP recovered}}",
-        `{{Critical Failure=${rollButton(damageRollExpression())} damage}}`,
-        `{{notes=${notes.join(" ")}}}`
+        `&{template:default} {{name=${title}`,
+        options.riskySurgery ? `}}{{Risky Surgery Damage=[[${damageRollExpression()}[slashing]]] slashing` : "",
+        `}}{{Medicine Check=[[${medicineCheck}]] vs DC ${dc}`,
+        `}}{{Critical Success=${rollButton(healingRollExpression(4, effectiveHealBonus, true))} HP recovered`,
+        `}}{{Success=${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered`,
+        "}}{{Failure=0 HP recovered",
+        `}}{{Critical Failure=${rollButton(damageRollExpression())} damage`,
+        `}}{{notes=${notes.join(" ")}}}`
       ];
-      return lines.filter(Boolean).join("");
+      return lines.filter(Boolean).join("\n");
     }
 
     function macroForActionPf2e(actionName, modifier, dc, healBonus, options = {}) {
@@ -842,6 +842,11 @@
         `{{roll01=[[${medicineCheck}]]}}`,
         "{{roll01_type=skill}}",
         "{{roll01_info=Medicine Check}}",
+        `{{roll02misc=[^{roll} ^{critical success}](${rollButton(healingRollExpression(4, effectiveHealBonus, true))})}}`,
+        `{{roll03misc=[^{roll} ^{damage}](Success: ${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered)}}`,
+        `{{roll04misc=[^{roll} ^{damage}](Failure: 0 HP recovered)}}`,
+        `{{roll05misc=[^{roll} ^{damage}](Critical Failure: ${rollButton(damageRollExpression())} damage)}}`,
+        `{{roll06misc=[^{roll} ^{critical_damage}](~-OsBtHKIjhttUGds8oZp|repeating_melee-strikes_-OsBtHzog3qvLQz4p0sk_CRITICAL_DAMAGE) }}`,
         `{{desc=${effectLines.join("<br>")}}}`
       ];
       return parts.filter(Boolean).join(" ");

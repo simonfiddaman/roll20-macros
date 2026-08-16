@@ -682,11 +682,11 @@
     }
 
     function effectLabel(action, degree, healBonus, riskySurgery) {
-      if (degree === "critical_success") return `4d8 + ${healBonus} HP`;
-      if (degree === "success") return `2d8 + ${healBonus} HP`;
-      if (degree === "failure") return "0 HP";
-      if (degree === "critical_failure") return "1d8 damage";
-      if (riskySurgery && action === "treatWounds" && degree === "critical_success") return `4d8 + ${healBonus} HP`;
+      if (degree === "critical_success") return `4d8 + ${healBonus} ❤️`;
+      if (degree === "success") return `2d8 + ${healBonus} ❤️`;
+      if (degree === "failure") return "🚫";
+      if (degree === "critical_failure") return "🔪 -1d8";
+      if (riskySurgery && action === "treatWounds" && degree === "critical_success") return `4d8 + ${healBonus} ❤️`;
       return "-";
     }
 
@@ -846,7 +846,6 @@
         `{{roll03misc=[^{roll} ^{damage}](Success: ${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered)}}`,
         `{{roll04misc=[^{roll} ^{damage}](Failure: 0 HP recovered)}}`,
         `{{roll05misc=[^{roll} ^{damage}](Critical Failure: ${rollButton(damageRollExpression())} damage)}}`,
-        `{{roll06misc=[^{roll} ^{critical_damage}](~-OsBtHKIjhttUGds8oZp|repeating_melee-strikes_-OsBtHzog3qvLQz4p0sk_CRITICAL_DAMAGE) }}`,
         `{{desc=${effectLines.join("<br>")}}}`
       ];
       return parts.filter(Boolean).join(" ");

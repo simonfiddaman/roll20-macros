@@ -146,7 +146,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 760px;
+      min-width: 1100px;
     }
 
     th, td {
@@ -164,13 +164,18 @@
       color: #d7e1fa;
     }
 
-    td.roll-col {
+    th.roll-col {
+      min-width: 3.2rem;
+    }
+
+    td.dc-col {
       position: sticky;
       left: 0;
       z-index: 1;
       background: #0e1628;
       color: #e7eeff;
       font-weight: 700;
+      white-space: nowrap;
     }
 
     td.outcome-critical_failure { background: var(--crit-fail); color: #fff; }
@@ -226,7 +231,7 @@
     .rules-list li { margin-bottom: 0.25rem; }
 
     @media (max-width: 680px) {
-      table { min-width: 320px; }
+      table { min-width: 1100px; }
       .container { padding: 0.7rem; }
       .panel { padding: 0.8rem; }
     }
@@ -282,18 +287,6 @@
       <h3 style="margin-top:1rem;">Items</h3>
       <div id="items" class="grid"></div>
 
-      <h3 style="margin-top:1rem;">Roll20 macro targets</h3>
-      <div class="grid">
-        <label for="macro-target-default" style="display:flex;align-items:center;gap:0.35rem;">
-          <input id="macro-target-default" type="checkbox" checked />
-          Default template
-        </label>
-        <label for="macro-target-pf2e" style="display:flex;align-items:center;gap:0.35rem;">
-          <input id="macro-target-pf2e" type="checkbox" checked />
-          Official PF2e sheet template
-        </label>
-      </div>
-
       <h3 style="margin-top:1rem;">Manual bonus overrides</h3>
       <div class="grid">
         <div>
@@ -338,6 +331,19 @@
 
     <section class="panel">
       <h2>Roll20 Macros</h2>
+
+      
+      <div class="list">
+        <h3 style="margin-top:1rem;">Roll20 macro targets</h3>
+        <label for="macro-target-default" style="display:flex;align-items:center;gap:0.35rem;">
+          <input id="macro-target-default" type="checkbox" checked />
+          Default template
+        </label>
+        <label for="macro-target-pf2e" style="display:flex;align-items:center;gap:0.35rem;">
+          <input id="macro-target-pf2e" type="checkbox" checked />
+          Official PF2e sheet template
+        </label>
+      </div>
       <div class="actions">
         <button id="copy-all" type="button">Copy all macros</button>
       </div>
@@ -719,22 +725,42 @@
       }
 
       let html = `<p class="muted">${title} modifier: <strong>${modifier >= 0 ? "+" : ""}${modifier}</strong></p><div class="legend"><span class="swatch cf">Critical Failure</span><span class="swatch f">Failure</span><span class="swatch s">Success</span><span class="swatch csm">Modified Critical Success</span><span class="swatch cs">Critical Success</span></div></p>`;
-      html += `<div class="table-wrap"><table><thead><tr><th>Roll</th><th>Total</th>`;
-
-      for (const tier of tiers) {
-        html += `<th>DC ${tier.dc} (${tier.label})</th>`;
-      }
-      html += "</tr></thead><tbody>";
+      html += `<div class="table-wrap"><table><thead><tr><th>D20</th>`;
 
       for (let roll = 1; roll <= 20; roll++) {
-        const total = roll + modifier;
-        if (roll === 1) html += `<tr><td class="roll-col outcome-critical_failure">1</td><td>${total}</td>`;
-        else if (roll === 20) html += `<tr><td class="roll-col outcome-critical_success">20</td><td>${total}</td>`;
-        else html += `<tr><td class="roll-col">${roll}</td><td>${total}</td>`;
-        for (const tier of tiers) {
+        if (roll === 1) html += `<th class="roll-col  outcome-critical_failure">${roll}</th>`;
+        else if (roll === 20) html += `<th class="roll-col  outcome-critical_success">${roll}</th>`;
+        else html += `<th class="roll-col outcome-critical_failure">${roll}</th>`;
+      }
+      html += "</tr><tr><th>total</th>";
+      for (let roll = 1; roll <= 20; roll++) {
+        html += `<th class="roll-col"><small>${roll + modifier}</small></th>`;
+      }
+      html += "</tr>";
+
+      for (const tier of tiers) {
+        html += `<tr><td class="dc-col">DC ${tier.dc}<br><small>${tier.label}</small></td>`;
+        let roll = 1;
+        while (roll <= 20) {
+          const total = roll + modifier;
           const result = evaluateOutcome(action, roll, total, tier.dc, options);
           const effect = effectLabel(action, result.degree, healingBonusForTier(tier), options.riskySurgery);
-          html += `<td class="${outcomeClass(result)}" style="border-style: outset;"><small>${effect}</small></td>`;
+          const className = outcomeClass(result);
+          const firstRoll = roll;
+          let span = 1;
+
+          while (roll + span <= 20) {
+            const nextRoll = roll + span;
+            const nextResult = evaluateOutcome(action, nextRoll, nextRoll + modifier, tier.dc, options);
+            const nextEffect = effectLabel(action, nextResult.degree, healingBonusForTier(tier), options.riskySurgery);
+            if (outcomeClass(nextResult) !== className || nextEffect !== effect) break;
+            span++;
+          }
+
+          const lastRoll = firstRoll + span - 1;
+          const rollDescription = span === 1 ? `Roll ${firstRoll}` : `Rolls ${firstRoll}-${lastRoll}`;
+          html += `<td colspan="${span}" class="${className}" style="border-style: outset;" title="${rollDescription}, total${span === 1 ? ` ${total}` : `s ${firstRoll + modifier}-${lastRoll + modifier}`}"><small>${effect}</small></td>`;
+          roll += span;
         }
         html += "</tr>";
       }

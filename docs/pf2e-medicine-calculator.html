@@ -858,20 +858,20 @@
       }
       if (notes) effectLines.push(`Notes: ${notes}`);
       const parts = [
-        "@{selected|whispertype} &{template:rolls}",
-        "{{charactername=@{selected|character_name}}}",
-        `{{header=${title}}}`,
-        options.riskySurgery ? "{{subheader=Medicine + Risky Surgery}}" : "{{subheader=Medicine}}",
-        options.riskySurgery ? `{{roll01misc=Risky Surgery Damage: [[${damageRollExpression()}]] slashing}}` : "",
-        `{{roll01=[[${medicineCheck}]]}}`,
-        "{{roll01_type=skill}}",
-        "{{roll01_info=Medicine Check}}",
-        `{{roll02misc=Critical Success: ${rollButton(healingRollExpression(4, effectiveHealBonus, true))} HP recovered}}`,
-        `{{roll03misc=Success: ${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered}}`,
-        `{{roll04misc=Failure: 0 HP recovered}}`,
-        `{{roll05misc=Critical Failure: ${rollButton(damageRollExpression())} damage}}`
+        "@{selected|whispertype} &{template:rolls} {{charactername=@{selected|character_name}",
+        `}}{{header=${title}`,
+        options.riskySurgery ? "}}{{subheader=Medicine + Risky Surgery" : "}}{{subheader=Medicine",
+        options.riskySurgery ? `}}{{roll01misc=Risky Surgery Damage: [[${damageRollExpression()}]] slashing` : "",
+        `}}{{roll01=[[${medicineCheck}]]`,
+        "}}{{roll01_type=skill",
+        "}}{{roll01_info=Medicine Check",
+        `}}{{roll02misc=Critical Success: ${rollButton(healingRollExpression(4, effectiveHealBonus, true))} HP recovered`,
+        `}}{{roll03misc=Success: ${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered`,
+        `}}{{roll04misc=Failure: 0 HP recovered`,
+        `}}{{roll05misc=Critical Failure: ${rollButton(damageRollExpression())} damage`,
+        "}}"
       ];
-      return parts.filter(Boolean).join(" ");
+      return parts.filter(Boolean).join("\n");
     }
 
     function createMacroBlock(name, macroText) {

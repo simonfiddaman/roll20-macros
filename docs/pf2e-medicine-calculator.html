@@ -340,7 +340,7 @@
           Default template
         </label>
         <label for="macro-target-pf2e" style="display:flex;align-items:center;gap:0.35rem;">
-          <input id="macro-target-pf2e" type="checkbox" checked />
+          <input id="macro-target-pf2e" type="checkbox" unchecked />
           Official PF2e sheet template
         </label>
       </div>
@@ -792,7 +792,7 @@
     }
 
     function rollButton(rollExpression, label = "Roll") {
-      return `[${label}](\`/r ${rollExpression}\`)`;
+      return `[${label}](\`/r ${rollExpression})`;
     }
 
     function damageRollExpression() {
@@ -833,13 +833,15 @@
 
       const lines = [
         `&{template:default} {{name=${title}`,
-        options.riskySurgery ? `}}{{Risky Surgery Damage=[[${damageRollExpression()}[slashing]]] slashing` : "",
+        "}}{{duration=10 minutes",
+        "}}{{targets=up to 4 creatures",
+        options.riskySurgery ? `}}{{Risky Surgery Damage=🔪 [[${damageRollExpression()}[slashing]]]` : "",
         `}}{{Medicine Check=[[${medicineCheck}]] vs DC ${dc}`,
         `}}{{Critical Success=${rollButton(healingRollExpression(4, effectiveHealBonus, true))} HP recovered`,
-        `}}{{Success=${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered`,
+        options.riskySurgery ? "" : `}}{{Success=${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered`,
         "}}{{Failure=0 HP recovered",
         `}}{{Critical Failure=${rollButton(damageRollExpression())} damage`,
-        `}}{{notes=${notes.join(" ")}}}`
+        "}}"
       ];
       return lines.filter(Boolean).join("\n");
     }
@@ -850,12 +852,6 @@
       const notes = macroNotes(actionName, options).join(" ");
       const action = actionName.startsWith("Treat Wounds") ? "treatWounds" : "battleMedicine";
       const medicineCheck = medicineCheckRollExpression(action, modifier, dc, options);
-      const effectLines = [
-        `Critical Success: ${rollButton(healingRollExpression(4, effectiveHealBonus, true))} HP recovered`,
-        `Success: ${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered`,
-        "Failure: 0 HP recovered",
-        `Critical Failure: ${rollButton(damageRollExpression())} damage`
-      ];
       if (options.riskySurgery) {
         effectLines.push(`Risky Surgery Damage: ${rollButton(damageRollExpression())} slashing`);
       }
@@ -871,8 +867,7 @@
         `{{roll02misc=[^{roll} ^{critical success}](${rollButton(healingRollExpression(4, effectiveHealBonus, true))})}}`,
         `{{roll03misc=[^{roll} ^{damage}](Success: ${rollButton(healingRollExpression(2, effectiveHealBonus, false))} HP recovered)}}`,
         `{{roll04misc=[^{roll} ^{damage}](Failure: 0 HP recovered)}}`,
-        `{{roll05misc=[^{roll} ^{damage}](Critical Failure: ${rollButton(damageRollExpression())} damage)}}`,
-        `{{desc=${effectLines.join("<br>")}}}`
+        `{{roll05misc=[^{roll} ^{damage}](Critical Failure: ${rollButton(damageRollExpression())} damage)}}`
       ];
       return parts.filter(Boolean).join(" ");
     }
